@@ -10,7 +10,10 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS: list[str] = []
 
-LOCAL_APPS: list[str] = []
+LOCAL_APPS = [
+    "apps.core",
+    "apps.catalog",
+]
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -35,6 +38,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.core.middleware.CurrentUserMiddleware",
 ]
 
 ROOT_URLCONF = "conf.urls"
