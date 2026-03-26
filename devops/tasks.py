@@ -68,6 +68,30 @@ def makemigrations(c):
     manage(c, "makemigrations")
 
 
+CDC_SERVICES = "redpanda redpanda-console"
+
+
+@task(name="cdc-up")
+def cdc_up(c):
+    c.run(
+        f"docker compose -f {ROOT}/docker-compose.yml up -d {CDC_SERVICES}",
+        pty=True,
+    )
+
+
+@task(name="cdc-logs")
+def cdc_logs(c, service="redpanda"):
+    c.run(f"docker compose -f {ROOT}/docker-compose.yml logs -f {service}", pty=True)
+
+
+@task(name="cdc-status")
+def cdc_status(c):
+    c.run(
+        f"docker exec meerkat-redpanda rpk cluster info",
+        pty=True,
+    )
+
+
 @task
 def tailwind(c):
     c.run(
