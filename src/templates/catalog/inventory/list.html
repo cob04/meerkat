@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - Meerkat{% endblock %}
+{% block page_title %}Inventory{% endblock %}
+
+{% block page_actions %}
+<div class="ml-auto">
+  <a href="{% url 'catalog:inventory-receive' %}"
+     class="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+    Receive Stock
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<form hx-get="{% url 'catalog:inventory-list' %}"
+      hx-target="#inventory-table"
+      hx-push-url="true"
+      class="flex flex-wrap items-end gap-3 mb-4">
+  <div>
+    <label class="block text-sm font-medium mb-1.5">Search</label>
+    {{ filter_form.search }}
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1.5">Status</label>
+    {{ filter_form.status }}
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1.5">Location</label>
+    {{ filter_form.location }}
+  </div>
+  <div>
+    <button type="submit"
+            class="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
+      Filter
+    </button>
+  </div>
+</form>
+
+<div id="inventory-table">
+  {% include "catalog/inventory/_list_table.html" %}
+</div>
+{% endblock %}

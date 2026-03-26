@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.item_name }} - Meerkat{% endblock %}
+{% block page_title %}{{ item.item_name }}{% endblock %}
+
+{% block page_actions %}
+<div class="ml-auto flex items-center gap-2">
+  <span class="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium border
+    {% if item.status == 'available' %}bg-green-50 text-green-700 border-green-200
+    {% elif item.status == 'reserved' %}bg-yellow-50 text-yellow-700 border-yellow-200
+    {% elif item.status == 'expired' %}bg-gray-50 text-gray-600 border-gray-200
+    {% elif item.status == 'recalled' %}bg-red-50 text-red-700 border-red-200
+    {% endif %}">
+    {{ item.get_status_display }}
+  </span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <div class="rounded-lg border border-border bg-card p-6">
+      <h2 class="text-sm font-medium text-muted-foreground mb-4">Item Details</h2>
+      <dl class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+        <div>
+          <dt class="text-muted-foreground mb-0.5">Batch Number</dt>
+          <dd class="font-medium">{{ item.batch_number }}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground mb-0.5">Location</dt>
+          <dd class="font-medium">{{ item.location }}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground mb-0.5">Quantity</dt>
+          <dd class="font-medium tabular-nums">{{ item.quantity }}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground mb-0.5">Unit Cost</dt>
+          <dd class="font-medium tabular-nums">${{ item.unit_cost }}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground mb-0.5">Expiry Date</dt>
+          <dd class="font-medium">{{ item.expiry_date }}</dd>
+        </div>
+        <div>
+          <dt class="text-muted-foreground mb-0.5">Product</dt>
+          <dd class="font-medium">{{ item.product|default:"Not cataloged" }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="rounded-lg border border-border bg-card">
+      <div class="px-6 py-4 border-b border-border">
+        <h2 class="text-sm font-medium text-muted-foreground">Movement History</h2>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-muted/50">
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Type</th>
+            <th class="h-9 px-4 text-right font-medium text-muted-foreground">Qty</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">From</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">To</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">By</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Date</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in movements %}
+          <tr class="border-b border-border last:border-0">
+            <td class="px-4 py-2">{{ m.get_movement_type_display }}</td>
+            <td class="px-4 py-2 text-right tabular-nums">{{ m.quantity }}</td>
+            <td class="px-4 py-2 text-muted-foreground">{{ m.from_location.name|default:"-" }}</td>
+            <td class="px-4 py-2 text-muted-foreground">{{ m.to_location.name|default:"-" }}</td>
+            <td class="px-4 py-2 text-muted-foreground">{{ m.performed_by.username }}</td>
+            <td class="px-4 py-2 text-muted-foreground">{{ m.created_at|date:"Y-m-d H:i" }}</td>
+            <td class="px-4 py-2 text-muted-foreground">{{ m.notes|truncatewords:10 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-muted-foreground">No movements recorded.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <div class="rounded-lg border border-border bg-card p-6">
+      <h2 class="text-sm font-medium text-muted-foreground mb-4">Actions</h2>
+      <div class="space-y-2">
+        {% if item.status == 'available' %}
+        <a href="{% url 'catalog:inventory-dispense' item.pk %}"
+           class="flex w-full h-9 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">
+          Dispense
+        </a>
+        <a href="{% url 'catalog:inventory-transfer' item.pk %}"
+           class="flex w-full h-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+          Transfer
+        </a>
+        <a href="{% url 'catalog:inventory-return' item.pk %}"
+           class="flex w-full h-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+          Return Stock
+        </a>
+        {% endif %}
+        <a href="{% url 'catalog:inventory-adjust' item.pk %}"
+           class="flex w-full h-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+          Adjust
+        </a>
+        <div class="pt-2 border-t border-border mt-2">
+          <a href="{% url 'catalog:inventory-list' %}"
+             class="flex w-full h-9 items-center justify-center rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            Back to List
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

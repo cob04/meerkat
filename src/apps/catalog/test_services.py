@@ -149,9 +149,7 @@ class TestTransferStock:
     @patch("apps.catalog.services._log_event")
     @patch.object(StockMovement, "save")
     @patch.object(InventoryItem, "save")
-    def test_reduces_source_and_creates_dest(
-        self, mock_item_save, mock_movement_save, mock_log
-    ):
+    def test_reduces_source_and_creates_dest(self, mock_item_save, mock_movement_save, mock_log):
         item = _mock_item(quantity=100)
         dest = _mock_location(name="Ward A", pk=2)
         user = _mock_user()

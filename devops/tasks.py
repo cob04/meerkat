@@ -66,3 +66,21 @@ def migrate(c):
 @task
 def makemigrations(c):
     manage(c, "makemigrations")
+
+
+@task
+def tailwind(c):
+    c.run(
+        f"docker compose -f {ROOT}/docker-compose.yml exec web "
+        "tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --watch",
+        pty=True,
+    )
+
+
+@task
+def tailwind_build(c):
+    c.run(
+        f"docker compose -f {ROOT}/docker-compose.yml exec web "
+        "tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --minify",
+        pty=True,
+    )

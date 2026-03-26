@@ -1,0 +1,102 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Meerkat{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+</head>
+<body class="bg-background text-foreground min-h-screen antialiased" hx-indicator="#loading">
+
+  <div id="loading" class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-primary z-50 animate-pulse"></div>
+
+  <div class="flex min-h-screen" x-data="{ sidebarOpen: true }">
+    <aside
+      class="w-56 bg-gray-900 text-gray-100 flex-shrink-0"
+      x-show="sidebarOpen"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0 -translate-x-2"
+      x-transition:enter-end="opacity-100 translate-x-0"
+      x-transition:leave="transition ease-in duration-100"
+      x-transition:leave-start="opacity-100 translate-x-0"
+      x-transition:leave-end="opacity-0 -translate-x-2"
+    >
+      <div class="px-4 py-5">
+        <a href="{% url 'catalog:inventory-list' %}" class="text-lg font-semibold tracking-tight">Meerkat</a>
+      </div>
+      <nav class="px-3 space-y-0.5">
+        {% with request.resolver_match.url_name as current %}
+        <a href="{% url 'catalog:inventory-list' %}"
+           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
+             {% if current == 'inventory-list' %}bg-gray-800 text-white font-medium
+             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+          Inventory
+        </a>
+        <a href="{% url 'catalog:inventory-receive' %}"
+           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
+             {% if current == 'inventory-receive' %}bg-gray-800 text-white font-medium
+             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+          Receive Stock
+        </a>
+        <a href="{% url 'catalog:inventory-recall' %}"
+           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
+             {% if current == 'inventory-recall' %}bg-gray-800 text-white font-medium
+             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+          Recall Batch
+        </a>
+        <div class="pt-3 pb-1">
+          <span class="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</span>
+        </div>
+        <a href="{% url 'catalog:location-list' %}"
+           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
+             {% if current == 'location-list' %}bg-gray-800 text-white font-medium
+             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+          Locations
+        </a>
+        <a href="{% url 'catalog:product-list' %}"
+           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
+             {% if current == 'product-list' %}bg-gray-800 text-white font-medium
+             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+          Products
+        </a>
+        {% endwith %}
+      </nav>
+    </aside>
+
+    <main class="flex-1 overflow-auto">
+      <div class="border-b border-border px-6 py-4 flex items-center gap-3">
+        <button @click="sidebarOpen = !sidebarOpen" class="p-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+          </svg>
+        </button>
+        <h1 class="text-lg font-semibold">{% block page_title %}{% endblock %}</h1>
+        {% block page_actions %}{% endblock %}
+      </div>
+
+      <div class="p-6">
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+          {% for message in messages %}
+          <div class="flex items-center justify-between px-4 py-3 rounded-lg border text-sm
+            {% if message.tags == 'success' %}bg-green-50 text-green-900 border-green-200
+            {% elif message.tags == 'error' %}bg-red-50 text-red-900 border-red-200
+            {% else %}bg-blue-50 text-blue-900 border-blue-200{% endif %}"
+            x-data="{ show: true }" x-show="show" x-transition>
+            <span>{{ message }}</span>
+            <button @click="show = false" class="ml-4 text-current opacity-50 hover:opacity-100">&times;</button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+{% extends "catalog/_form_base.html" %}
+{% block title %}Return Stock - Meerkat{% endblock %}
+{% block page_title %}Return Stock{% endblock %}
+{% block submit_label %}Return{% endblock %}
+{% block cancel_url %}{% url 'catalog:inventory-detail' item.pk %}{% endblock %}
