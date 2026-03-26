@@ -28,6 +28,9 @@ docker/.env
 .DS_Store
 Thumbs.db
 
+# Tailwind
+src/assets/css/tailwind.out.css
+
 # Backups
 *.dump
 *.sql

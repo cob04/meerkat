@@ -1,0 +1,5 @@
+{% extends "catalog/_form_base.html" %}
+{% block title %}Adjust Stock - Meerkat{% endblock %}
+{% block page_title %}Adjust Stock{% endblock %}
+{% block submit_label %}Adjust{% endblock %}
+{% block cancel_url %}{% url 'catalog:inventory-detail' item.pk %}{% endblock %}

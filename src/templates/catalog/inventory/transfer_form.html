@@ -1,0 +1,5 @@
+{% extends "catalog/_form_base.html" %}
+{% block title %}Transfer Stock - Meerkat{% endblock %}
+{% block page_title %}Transfer Stock{% endblock %}
+{% block submit_label %}Transfer{% endblock %}
+{% block cancel_url %}{% url 'catalog:inventory-detail' item.pk %}{% endblock %}
