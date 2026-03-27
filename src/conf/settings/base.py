@@ -99,3 +99,7 @@ CACHES = {
 
 CELERY_BROKER_URL = config("REDIS_URL", default="redis://redis:6379/0")
 CELERY_RESULT_BACKEND = config("REDIS_URL", default="redis://redis:6379/0")
+
+OPENSEARCH_URL = config("OPENSEARCH_URL", default="http://opensearch:9200")
+OPENSEARCH_INDEX_PREFIX = config("OPENSEARCH_INDEX_PREFIX", default="meerkat")
+BROKER_BOOTSTRAP_SERVERS = config("BROKER_BOOTSTRAP_SERVERS", default="redpanda:29092")

@@ -68,7 +68,7 @@ def makemigrations(c):
     manage(c, "makemigrations")
 
 
-CDC_SERVICES = "redpanda redpanda-console connect"
+CDC_SERVICES = "redpanda redpanda-console connect opensearch cdc-consumer"
 
 
 @task(name="cdc-up")
@@ -86,7 +86,9 @@ def cdc_logs(c, service="redpanda"):
 
 @task(name="cdc-setup")
 def cdc_setup(c):
+    manage(c, "setup_opensearch")
     manage(c, "register_connector")
+    manage(c, "start_consumer")
 
 
 @task(name="cdc-status")
