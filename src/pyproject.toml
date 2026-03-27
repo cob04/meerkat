@@ -12,6 +12,7 @@ dependencies = [
     "python-decouple>=3.8",
     "confluent-kafka>=2.6,<3",
     "requests>=2.32,<3",
+    "opensearch-py>=2.7,<3",
 ]
 
 [project.optional-dependencies]

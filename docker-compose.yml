@@ -18,6 +18,8 @@ services:
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - OPENSEARCH_URL=${OPENSEARCH_URL:-http://opensearch:9200}
+      - BROKER_BOOTSTRAP_SERVERS=${BROKER_BOOTSTRAP_SERVERS:-redpanda:29092}
     depends_on:
       - db
       - redis
@@ -78,6 +80,56 @@ services:
       - redpanda
       - db
 
+  opensearch:
+    container_name: meerkat-opensearch
+    image: opensearchproject/opensearch:2.18.0
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+
+  cdc-consumer:
+    container_name: meerkat-cdc-consumer
+    build:
+      context: ./src
+      dockerfile: ../docker/Dockerfile
+    command:
+      - uv
+      - run
+      - celery
+      - -A
+      - conf.celery
+      - worker
+      - -l
+      - info
+      - -Q
+      - cdc
+    volumes:
+      - ./src:/app
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-conf.settings.dev}
+      - DEBUG=${DEBUG:-true}
+      - POSTGRES_DB=${POSTGRES_DB:-meerkat}
+      - POSTGRES_USER=${POSTGRES_USER:-meerkat}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-meerkat}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - OPENSEARCH_URL=${OPENSEARCH_URL:-http://opensearch:9200}
+      - BROKER_BOOTSTRAP_SERVERS=${BROKER_BOOTSTRAP_SERVERS:-redpanda:29092}
+    restart: unless-stopped
+    depends_on:
+      - redpanda
+      - opensearch
+      - db
+      - redis
+
   redis:
     container_name: meerkat-redis
     image: redis:7-alpine
@@ -85,3 +137,4 @@ services:
 volumes:
   postgres_data:
   redpanda_data:
+  opensearch_data:
