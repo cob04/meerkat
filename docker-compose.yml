@@ -2,10 +2,11 @@ services:
   web:
     container_name: meerkat-web
     build:
-      context: ./src
-      dockerfile: ../docker/web/Dockerfile
+      context: .
+      dockerfile: docker/web/Dockerfile
+      target: development
     volumes:
-      - ./src:/app
+      - ./src:/opt/meerkat/src
     ports:
       - "${WEB_PORT:-8000}:8000"
     environment:

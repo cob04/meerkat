@@ -32,6 +32,7 @@ line_length = 100
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "conf.settings.dev"
 python_files = ["tests.py", "test_*.py"]
+cache_dir = "/tmp/pytest_cache"
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
