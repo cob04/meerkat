@@ -3,7 +3,7 @@ services:
     container_name: meerkat-web
     build:
       context: ./src
-      dockerfile: ../docker/Dockerfile
+      dockerfile: ../docker/web/Dockerfile
     volumes:
       - ./src:/app
     ports:
