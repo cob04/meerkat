@@ -99,19 +99,22 @@ def cdc_status(c):
     )
 
 
+TAILWIND_RUN = (
+    f"docker run --rm -v {ROOT}/src:/app "
+    f"-w /app meerkat-tailwind"
+)
+
+
 @task
 def tailwind(c):
-    c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml exec web "
-        "tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --watch",
-        pty=True,
-    )
+    c.run(f"{TAILWIND_RUN} -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --watch", pty=True)
 
 
 @task
 def tailwind_build(c):
-    c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml exec web "
-        "tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --minify",
-        pty=True,
-    )
+    c.run(f"{TAILWIND_RUN} -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --minify", pty=True)
+
+
+@task(name="tailwind-image")
+def tailwind_image(c):
+    c.run(f"docker build --network=host -t meerkat-tailwind {ROOT}/docker/tailwind", pty=True)
