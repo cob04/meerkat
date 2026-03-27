@@ -1,7 +1,7 @@
 FROM python:3.14-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev gcc curl \
+    libpq-dev librdkafka-dev gcc curl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.3/tailwindcss-linux-x64 \
