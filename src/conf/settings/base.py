@@ -13,6 +13,7 @@ ALLOWED_HOSTS: list[str] = []
 LOCAL_APPS = [
     "apps.core",
     "apps.catalog",
+    "apps.cdc",
 ]
 
 DJANGO_APPS = [

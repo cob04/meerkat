@@ -84,6 +84,11 @@ def cdc_logs(c, service="redpanda"):
     c.run(f"docker compose -f {ROOT}/docker-compose.yml logs -f {service}", pty=True)
 
 
+@task(name="cdc-setup")
+def cdc_setup(c):
+    manage(c, "register_connector")
+
+
 @task(name="cdc-status")
 def cdc_status(c):
     c.run(
