@@ -7,9 +7,17 @@ services:
     volumes:
       - ./src:/app
     ports:
-      - "8000:8000"
-    env_file:
-      - docker/.env
+      - "${WEB_PORT:-8000}:8000"
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-conf.settings.dev}
+      - DEBUG=${DEBUG:-true}
+      - POSTGRES_DB=${POSTGRES_DB:-meerkat}
+      - POSTGRES_USER=${POSTGRES_USER:-meerkat}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-meerkat}
+      - POSTGRES_HOST=${POSTGRES_HOST:-db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       - db
       - redis
@@ -19,8 +27,14 @@ services:
     image: postgres:17-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - docker/.env
+    command: postgres
+      -c wal_level=logical
+      -c max_wal_senders=4
+      -c max_replication_slots=4
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-meerkat}
+      - POSTGRES_USER=${POSTGRES_USER:-meerkat}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-meerkat}
 
   redpanda:
     container_name: meerkat-redpanda
@@ -45,10 +59,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      KAFKA_BROKERS: redpanda:29092
-      SCHEMA_REGISTRY_URL: http://redpanda:8081
+      - KAFKA_BROKERS=redpanda:29092
     depends_on:
       - redpanda
+
+  connect:
+    container_name: meerkat-connect
+    image: debezium/connect:3.0.0.Final
+    ports:
+      - "8083:8083"
+    environment:
+      - BOOTSTRAP_SERVERS=redpanda:29092
+      - GROUP_ID=meerkat-connect
+      - CONFIG_STORAGE_TOPIC=_connect_configs
+      - OFFSET_STORAGE_TOPIC=_connect_offsets
+      - STATUS_STORAGE_TOPIC=_connect_status
+    depends_on:
+      - redpanda
+      - db
 
   redis:
     container_name: meerkat-redis

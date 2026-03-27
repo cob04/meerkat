@@ -68,7 +68,7 @@ def makemigrations(c):
     manage(c, "makemigrations")
 
 
-CDC_SERVICES = "redpanda redpanda-console"
+CDC_SERVICES = "redpanda redpanda-console connect"
 
 
 @task(name="cdc-up")
