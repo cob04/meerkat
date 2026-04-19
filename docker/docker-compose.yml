@@ -1,3 +1,5 @@
+name: meerkat
+
 services:
   web:
     container_name: meerkat-web
