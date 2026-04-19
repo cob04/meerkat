@@ -14,6 +14,7 @@ LOCAL_APPS = [
     "apps.core",
     "apps.catalog",
     "apps.cdc",
+    "apps.search",
 ]
 
 DJANGO_APPS = [
