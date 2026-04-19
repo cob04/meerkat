@@ -1,0 +1,9 @@
+from django.urls import path
+
+from apps.search import views
+
+app_name = "search"
+
+urlpatterns = [
+    path("", views.catalog_search, name="catalog-search"),
+]

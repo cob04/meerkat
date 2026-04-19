@@ -1,0 +1,76 @@
+<div class="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+  <span>{{ results.total }} result{{ results.total|pluralize }}</span>
+  <span class="tabular-nums">engine: {{ results.engine_took_ms }}ms</span>
+</div>
+
+<div class="rounded-lg border border-border">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-border bg-muted/50">
+        <th class="h-10 px-4 text-left font-medium text-muted-foreground">Item</th>
+        <th class="h-10 px-4 text-left font-medium text-muted-foreground">Product</th>
+        <th class="h-10 px-4 text-left font-medium text-muted-foreground">Batch</th>
+        <th class="h-10 px-4 text-left font-medium text-muted-foreground">Location</th>
+        <th class="h-10 px-4 text-right font-medium text-muted-foreground">Qty</th>
+        <th class="h-10 px-4 text-left font-medium text-muted-foreground">Expiry</th>
+        <th class="h-10 px-4 text-left font-medium text-muted-foreground">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in results.items %}
+      <tr class="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+        <td class="px-4 py-2.5">
+          <a href="{% url 'catalog:inventory-detail' item.id %}" class="font-medium hover:underline">
+            {{ item.item_name }}
+          </a>
+        </td>
+        <td class="px-4 py-2.5 text-muted-foreground">{{ item.product_name|default:"—" }}</td>
+        <td class="px-4 py-2.5 text-muted-foreground">{{ item.batch_number }}</td>
+        <td class="px-4 py-2.5 text-muted-foreground">{{ item.location_name|default:"—" }}</td>
+        <td class="px-4 py-2.5 text-right tabular-nums">{{ item.quantity }}</td>
+        <td class="px-4 py-2.5 text-muted-foreground">{{ item.expiry_date|default:"—" }}</td>
+        <td class="px-4 py-2.5">
+          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border
+            {% if item.status == 'available' %}bg-green-50 text-green-700 border-green-200
+            {% elif item.status == 'reserved' %}bg-yellow-50 text-yellow-700 border-yellow-200
+            {% elif item.status == 'expired' %}bg-gray-50 text-gray-600 border-gray-200
+            {% elif item.status == 'recalled' %}bg-red-50 text-red-700 border-red-200
+            {% endif %}">
+            {{ item.status|title }}
+          </span>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="px-4 py-8 text-center text-muted-foreground">No results.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if results.total_pages > 1 %}
+<div class="mt-4 flex items-center justify-center gap-1">
+  {% if results.has_prev %}
+  <a href="?q={{ query.q|default:'' }}&page={{ results.page|add:'-1' }}"
+     hx-get="{% url 'search:catalog-search' %}?q={{ query.q|default:'' }}&page={{ results.page|add:'-1' }}"
+     hx-target="#search-results"
+     hx-push-url="true"
+     class="inline-flex h-8 items-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">
+    Previous
+  </a>
+  {% endif %}
+  <span class="px-3 text-sm text-muted-foreground">
+    Page {{ results.page }} of {{ results.total_pages }}
+  </span>
+  {% if results.has_next %}
+  <a href="?q={{ query.q|default:'' }}&page={{ results.page|add:'1' }}"
+     hx-get="{% url 'search:catalog-search' %}?q={{ query.q|default:'' }}&page={{ results.page|add:'1' }}"
+     hx-target="#search-results"
+     hx-push-url="true"
+     class="inline-flex h-8 items-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">
+    Next
+  </a>
+  {% endif %}
+</div>
+{% endif %}
