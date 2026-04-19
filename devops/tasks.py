@@ -51,9 +51,10 @@ def test(c):
 
 @task
 def fmt(c):
+    exec_web = f"docker compose -f {ROOT}/docker/docker-compose.yml exec web"
+    uv_run = "uv run --project /opt/meerkat/src"
     c.run(
-        f"docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run black . "
-        f"&& docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run isort .",
+        f"{exec_web} {uv_run} black . && {exec_web} {uv_run} isort .",
         pty=True,
     )
 
