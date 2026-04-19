@@ -2,10 +2,11 @@ services:
   web:
     container_name: meerkat-web
     build:
-      context: ./src
-      dockerfile: ../docker/web/Dockerfile
+      context: ../
+      dockerfile: docker/web/Dockerfile
+      target: development
     volumes:
-      - ./src:/app
+      - ../src:/opt/meerkat/src
     ports:
       - "${WEB_PORT:-8000}:8000"
     environment:
@@ -96,11 +97,10 @@ services:
   cdc-consumer:
     container_name: meerkat-cdc-consumer
     build:
-      context: ./src
-      dockerfile: ../docker/Dockerfile
+      context: ../
+      dockerfile: docker/web/Dockerfile
+      target: development
     command:
-      - uv
-      - run
       - celery
       - -A
       - conf.celery
@@ -110,7 +110,7 @@ services:
       - -Q
       - cdc
     volumes:
-      - ./src:/app
+      - ../src:/opt/meerkat/src
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
       - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE:-conf.settings.dev}

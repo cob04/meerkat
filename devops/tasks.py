@@ -7,28 +7,28 @@ ROOT = Path(__file__).resolve().parent.parent
 
 @task
 def build(c):
-    c.run(f"docker compose -f {ROOT}/docker-compose.yml build", pty=True)
+    c.run(f"docker compose -f {ROOT}/docker/docker-compose.yml build", pty=True)
 
 
 @task
 def up(c):
-    c.run(f"docker compose -f {ROOT}/docker-compose.yml up -d", pty=True)
+    c.run(f"docker compose -f {ROOT}/docker/docker-compose.yml up -d", pty=True)
 
 
 @task
 def down(c):
-    c.run(f"docker compose -f {ROOT}/docker-compose.yml down", pty=True)
+    c.run(f"docker compose -f {ROOT}/docker/docker-compose.yml down", pty=True)
 
 
 @task
 def logs(c):
-    c.run(f"docker compose -f {ROOT}/docker-compose.yml logs -f web", pty=True)
+    c.run(f"docker compose -f {ROOT}/docker/docker-compose.yml logs -f web", pty=True)
 
 
 @task
 def manage(c, command):
     c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml exec web uv run python manage.py {command}",
+        f"docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run python manage.py {command}",
         pty=True,
     )
 
@@ -36,7 +36,7 @@ def manage(c, command):
 @task
 def shell(c):
     c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml exec web uv run python manage.py shell_plus",
+        f"docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run python manage.py shell_plus",
         pty=True,
     )
 
@@ -44,7 +44,7 @@ def shell(c):
 @task
 def test(c):
     c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml exec web uv run pytest",
+        f"docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run pytest",
         pty=True,
     )
 
@@ -52,8 +52,8 @@ def test(c):
 @task
 def fmt(c):
     c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml exec web uv run black . "
-        f"&& docker compose -f {ROOT}/docker-compose.yml exec web uv run isort .",
+        f"docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run black . "
+        f"&& docker compose -f {ROOT}/docker/docker-compose.yml exec web uv run isort .",
         pty=True,
     )
 
@@ -74,14 +74,14 @@ CDC_SERVICES = "redpanda redpanda-console connect opensearch cdc-consumer"
 @task(name="cdc-up")
 def cdc_up(c):
     c.run(
-        f"docker compose -f {ROOT}/docker-compose.yml up -d {CDC_SERVICES}",
+        f"docker compose -f {ROOT}/docker/docker-compose.yml up -d {CDC_SERVICES}",
         pty=True,
     )
 
 
 @task(name="cdc-logs")
 def cdc_logs(c, service="redpanda"):
-    c.run(f"docker compose -f {ROOT}/docker-compose.yml logs -f {service}", pty=True)
+    c.run(f"docker compose -f {ROOT}/docker/docker-compose.yml logs -f {service}", pty=True)
 
 
 @task(name="cdc-setup")
