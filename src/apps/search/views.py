@@ -16,7 +16,14 @@ def catalog_search(request):
         page=_int_param(request.GET.get("page"), default=1, minimum=1),
         page_size=_int_param(request.GET.get("page_size"), default=DEFAULT_PAGE_SIZE, minimum=1),
         sort=request.GET.get("sort") or "_score",
+        status=request.GET.getlist("status"),
+        location=request.GET.getlist("location"),
+        category=request.GET.getlist("category"),
     )
+
+    base_params = request.GET.copy()
+    base_params.pop("page", None)
+    base_qs = base_params.urlencode()
 
     try:
         results = services.search_inventory(query)
@@ -32,7 +39,7 @@ def catalog_search(request):
         request,
         "search/catalog_search.html",
         "search/_results.html",
-        {"query": query, "results": results},
+        {"query": query, "results": results, "base_qs": base_qs},
     )
 
 

@@ -49,6 +49,50 @@ class TestBuildBody:
 
 
 @pytest.mark.unit
+class TestFacetAggs:
+    def test_body_includes_status_location_category_aggs(self):
+        body = search.build_body(InventoryQuery(q="panadol"))
+
+        assert set(body["aggs"].keys()) == {"status", "location", "category"}
+        for facet, field_name in search.FACET_FIELDS.items():
+            agg = body["aggs"][facet]
+            assert agg["aggs"]["buckets"]["terms"]["field"] == field_name
+
+    def test_no_post_filter_without_selections(self):
+        body = search.build_body(InventoryQuery(q="x"))
+
+        assert "post_filter" not in body
+
+    def test_post_filter_combines_all_selections(self):
+        body = search.build_body(
+            InventoryQuery(
+                q="x",
+                status=["available", "reserved"],
+                location=["Main Pharmacy"],
+                category=["antibiotic"],
+            )
+        )
+
+        clauses = body["post_filter"]["bool"]["filter"]
+        assert {"terms": {"status": ["available", "reserved"]}} in clauses
+        assert {"terms": {"location_name.keyword": ["Main Pharmacy"]}} in clauses
+        assert {"terms": {"product_category": ["antibiotic"]}} in clauses
+
+    def test_facet_agg_excludes_its_own_filter(self):
+        body = search.build_body(
+            InventoryQuery(q="x", status=["available"], category=["antibiotic"])
+        )
+
+        status_filters = body["aggs"]["status"]["filter"]["bool"]["filter"]
+        assert {"terms": {"status": ["available"]}} not in status_filters
+        assert {"terms": {"product_category": ["antibiotic"]}} in status_filters
+
+        category_filters = body["aggs"]["category"]["filter"]["bool"]["filter"]
+        assert {"terms": {"status": ["available"]}} in category_filters
+        assert {"terms": {"product_category": ["antibiotic"]}} not in category_filters
+
+
+@pytest.mark.unit
 class TestParseResponse:
     def test_parses_hits_into_docs(self):
         response = {
@@ -103,3 +147,36 @@ class TestParseResponse:
         assert results.total == 0
         assert results.items == []
         assert results.engine_took_ms == 3
+
+    def test_extracts_facet_buckets(self):
+        response = {
+            "took": 5,
+            "hits": {"total": {"value": 0}, "hits": []},
+            "aggregations": {
+                "status": {
+                    "buckets": {
+                        "buckets": [
+                            {"key": "available", "doc_count": 12},
+                            {"key": "expired", "doc_count": 3},
+                        ]
+                    }
+                },
+                "location": {"buckets": {"buckets": [{"key": "Main Pharmacy", "doc_count": 10}]}},
+                "category": {"buckets": {"buckets": [{"key": "antibiotic", "doc_count": 7}]}},
+            },
+        }
+
+        results = search.parse_response(response, InventoryQuery(q="x"))
+
+        assert results.facets.status == {"available": 12, "expired": 3}
+        assert results.facets.location == {"Main Pharmacy": 10}
+        assert results.facets.category == {"antibiotic": 7}
+
+    def test_missing_aggs_yields_empty_facets(self):
+        response = {"took": 1, "hits": {"total": {"value": 0}, "hits": []}}
+
+        results = search.parse_response(response, InventoryQuery(q="x"))
+
+        assert results.facets.status == {}
+        assert results.facets.location == {}
+        assert results.facets.category == {}
