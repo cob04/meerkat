@@ -10,6 +10,13 @@ class InventoryQuery:
     page: int = 1
     page_size: int = DEFAULT_PAGE_SIZE
     sort: str = "_score"
+    status: list[str] = field(default_factory=list)
+    location: list[str] = field(default_factory=list)
+    category: list[str] = field(default_factory=list)
+
+    @property
+    def has_filters(self) -> bool:
+        return bool(self.status or self.location or self.category)
 
 
 @dataclass

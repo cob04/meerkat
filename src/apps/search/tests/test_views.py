@@ -77,3 +77,55 @@ class TestCatalogSearchView:
         assert response.status_code == 200
         assert mock.call_count == 1
         assert mock.call_args.args[0].q is None
+
+    def test_multi_value_facet_params_passed_to_query(self, client):
+        with patch(
+            "apps.search.views.services.search_inventory", return_value=_fake_results()
+        ) as mock:
+            client.get(
+                reverse("search:catalog-search"),
+                {
+                    "q": "panadol",
+                    "status": ["available", "reserved"],
+                    "location": ["Main Pharmacy"],
+                    "category": ["antibiotic"],
+                },
+            )
+
+        passed = mock.call_args.args[0]
+        assert passed.status == ["available", "reserved"]
+        assert passed.location == ["Main Pharmacy"]
+        assert passed.category == ["antibiotic"]
+
+    def test_base_qs_strips_page(self, client):
+        item = InventoryDoc(
+            id=1,
+            item_name="x",
+            product_name=None,
+            batch_number="B",
+            location_name=None,
+            quantity=0,
+            status="available",
+            expiry_date=None,
+        )
+        results = InventoryResults(
+            items=[item],
+            total=60,
+            page=2,
+            page_size=25,
+            engine_took_ms=1,
+            facets=FacetBreakdown(),
+        )
+
+        with patch("apps.search.views.services.search_inventory", return_value=results):
+            response = client.get(
+                reverse("search:catalog-search"),
+                {"q": "p", "page": "2", "status": "available"},
+                HTTP_HX_REQUEST="true",
+            )
+
+        body = response.content.decode()
+        assert "q=p" in body
+        assert "status=available" in body
+        assert "&page=" in body
+        assert "page=2&" not in body and "&page=2" not in body
