@@ -6,6 +6,13 @@ from apps.search.contracts import (
     InventoryResults,
 )
 
+EXPIRY_BUCKET_RANGES = {
+    "expired": {"lt": "now/d"},
+    "30d": {"gte": "now/d", "lt": "now+30d/d"},
+    "90d": {"gte": "now+30d/d", "lt": "now+90d/d"},
+    "90plus": {"gte": "now+90d/d"},
+}
+
 SEARCH_FIELDS = [
     "product_name^3",
     "drug_brand_name^3",
@@ -41,10 +48,16 @@ def build_body(query: InventoryQuery) -> dict:
     else:
         match_query = {"match_all": {}}
 
+    expiry_clause = expiry_filter(query.expiry_bucket)
+    if expiry_clause:
+        scoped_query = {"bool": {"must": [match_query], "filter": [expiry_clause]}}
+    else:
+        scoped_query = match_query
+
     body = {
         "from": offset,
         "size": page_size,
-        "query": match_query,
+        "query": scoped_query,
         "sort": _build_sort(query.sort),
         "track_total_hits": True,
         "aggs": _build_aggs(query),
@@ -55,6 +68,12 @@ def build_body(query: InventoryQuery) -> dict:
         body["post_filter"] = post_filter
 
     return body
+
+
+def expiry_filter(bucket: str | None) -> dict | None:
+    if not bucket or bucket not in EXPIRY_BUCKET_RANGES:
+        return None
+    return {"range": {"expiry_date": EXPIRY_BUCKET_RANGES[bucket]}}
 
 
 def _build_sort(sort: str) -> list:

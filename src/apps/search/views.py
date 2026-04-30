@@ -6,6 +6,7 @@ from apps.search.contracts import (
     AVAILABILITY_SORTS,
     DEFAULT_PAGE_SIZE,
     AvailabilityQuery,
+    ExpiryQuery,
     InventoryQuery,
 )
 
@@ -24,6 +25,7 @@ def catalog_search(request):
         status=request.GET.getlist("status"),
         location=request.GET.getlist("location"),
         category=request.GET.getlist("category"),
+        expiry_bucket=request.GET.get("expiry_bucket") or None,
     )
 
     base_params = request.GET.copy()
@@ -86,6 +88,30 @@ def availability(request):
         "search/availability.html",
         "search/_availability.html",
         {"query": query, "result": result},
+    )
+
+
+def expiry(request):
+    query = ExpiryQuery(
+        location=request.GET.getlist("location"),
+        category=request.GET.getlist("category"),
+    )
+
+    try:
+        rollup = services.expiry_rollup(query)
+    except SearchUnavailable:
+        return _render(
+            request,
+            "search/expiry.html",
+            "search/_unavailable.html",
+            {"query": query},
+        )
+
+    return _render(
+        request,
+        "search/expiry.html",
+        "search/_expiry.html",
+        {"query": query, "rollup": rollup},
     )
 
 

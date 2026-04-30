@@ -4,6 +4,15 @@ from typing import Any
 DEFAULT_PAGE_SIZE = 25
 
 
+EXPIRY_BUCKETS = ("expired", "30d", "90d", "90plus")
+EXPIRY_BUCKET_LABELS = {
+    "expired": "Expired",
+    "30d": "Within 30 days",
+    "90d": "Within 90 days",
+    "90plus": "Over 90 days",
+}
+
+
 @dataclass
 class InventoryQuery:
     q: str | None = None
@@ -13,10 +22,11 @@ class InventoryQuery:
     status: list[str] = field(default_factory=list)
     location: list[str] = field(default_factory=list)
     category: list[str] = field(default_factory=list)
+    expiry_bucket: str | None = None
 
     @property
     def has_filters(self) -> bool:
-        return bool(self.status or self.location or self.category)
+        return bool(self.status or self.location or self.category or self.expiry_bucket)
 
 
 @dataclass
@@ -122,3 +132,39 @@ class AvailabilityResult:
     by_location: list[LocationStock]
     engine_took_ms: int
     origin_resolved: bool = False
+
+
+@dataclass
+class ExpiryQuery:
+    location: list[str] = field(default_factory=list)
+    category: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ExpiryBucket:
+    key: str
+    label: str
+    count: int
+
+
+@dataclass
+class LocationExpiry:
+    location_name: str
+    total: int
+    buckets: list[ExpiryBucket]
+
+
+@dataclass
+class CategoryExpiry:
+    category: str
+    total: int
+    buckets: list[ExpiryBucket]
+
+
+@dataclass
+class ExpiryRollup:
+    total_items: int
+    buckets: list[ExpiryBucket]
+    by_location: list[LocationExpiry]
+    by_category: list[CategoryExpiry]
+    engine_took_ms: int

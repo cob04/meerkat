@@ -1,0 +1,91 @@
+{% if rollup %}
+  <div class="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+    <span>{{ rollup.total_items }} item{{ rollup.total_items|pluralize }} with an expiry date</span>
+    <span class="tabular-nums">engine: {{ rollup.engine_took_ms }}ms</span>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    {% for bucket in rollup.buckets %}
+      <a href="{% url 'search:catalog-search' %}?expiry_bucket={{ bucket.key }}"
+         class="rounded-lg border border-border bg-card p-4 hover:border-foreground/30 hover:bg-muted/40 transition-colors">
+        <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">{{ bucket.label }}</div>
+        <div class="text-2xl font-semibold tabular-nums
+          {% if bucket.key == 'expired' %}text-red-700
+          {% elif bucket.key == '30d' %}text-yellow-700
+          {% endif %}">{{ bucket.count }}</div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="rounded-lg border border-border">
+      <div class="px-4 py-2.5 border-b border-border bg-muted/40">
+        <h3 class="text-sm font-medium">By location</h3>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Location</th>
+            {% for bucket in rollup.buckets %}
+              <th class="h-9 px-3 text-right font-medium text-muted-foreground">{{ bucket.label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rollup.by_location %}
+            <tr class="border-b border-border last:border-0 hover:bg-muted/30">
+              <td class="px-4 py-2 font-medium">{{ row.location_name }}</td>
+              {% for bucket in row.buckets %}
+                <td class="px-3 py-2 text-right tabular-nums {% if bucket.count == 0 %}text-muted-foreground{% endif %}">
+                  {% if bucket.count > 0 %}
+                    <a href="{% url 'search:catalog-search' %}?expiry_bucket={{ bucket.key }}&location={{ row.location_name|urlencode }}"
+                       class="hover:underline">{{ bucket.count }}</a>
+                  {% else %}
+                    {{ bucket.count }}
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="px-4 py-6 text-center text-muted-foreground">No locations.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rounded-lg border border-border">
+      <div class="px-4 py-2.5 border-b border-border bg-muted/40">
+        <h3 class="text-sm font-medium">By category</h3>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Category</th>
+            {% for bucket in rollup.buckets %}
+              <th class="h-9 px-3 text-right font-medium text-muted-foreground">{{ bucket.label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rollup.by_category %}
+            <tr class="border-b border-border last:border-0 hover:bg-muted/30">
+              <td class="px-4 py-2 font-medium">{{ row.category }}</td>
+              {% for bucket in row.buckets %}
+                <td class="px-3 py-2 text-right tabular-nums {% if bucket.count == 0 %}text-muted-foreground{% endif %}">
+                  {% if bucket.count > 0 %}
+                    <a href="{% url 'search:catalog-search' %}?expiry_bucket={{ bucket.key }}&category={{ row.category|urlencode }}"
+                       class="hover:underline">{{ bucket.count }}</a>
+                  {% else %}
+                    {{ bucket.count }}
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="px-4 py-6 text-center text-muted-foreground">No categories.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
