@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Recall Lookup - Meerkat{% endblock %}
+{% block page_title %}Recall Lookup{% endblock %}
+
+{% block content %}
+<form hx-get="{% url 'search:recall-lookup' %}"
+      hx-target="#recall-results"
+      hx-push-url="true"
+      hx-trigger="submit, change">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Manufacturer</label>
+      <input type="text"
+             name="manufacturer"
+             value="{{ query.manufacturer|default:'' }}"
+             placeholder="e.g. Pfizer"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Batch number</label>
+      <input type="text"
+             name="batch_pattern"
+             value="{{ query.batch_pattern|default:'' }}"
+             placeholder="exact or wildcard, e.g. B5*"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Drug ID</label>
+      <input type="number"
+             name="drug_id"
+             value="{{ query.drug_id|default:'' }}"
+             min="1"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Received from</label>
+      <input type="date"
+             name="created_from"
+             value="{{ query.created_from|default:'' }}"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Received to</label>
+      <input type="date"
+             name="created_to"
+             value="{{ query.created_to|default:'' }}"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+  </div>
+
+  <div id="recall-results">
+    {% include "search/_recall.html" %}
+  </div>
+</form>
+{% endblock %}

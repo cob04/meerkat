@@ -207,3 +207,57 @@ class LowStockResult:
     by_location: list[StockBucket]
     by_category: list[StockBucket]
     engine_took_ms: int
+
+
+RECALL_TOP_N = 100
+
+
+@dataclass
+class RecallQuery:
+    manufacturer: str | None = None
+    batch_pattern: str | None = None
+    drug_id: int | None = None
+    created_from: str | None = None
+    created_to: str | None = None
+
+    @property
+    def has_criteria(self) -> bool:
+        return any(
+            [
+                self.manufacturer,
+                self.batch_pattern,
+                self.drug_id,
+                self.created_from,
+                self.created_to,
+            ]
+        )
+
+
+@dataclass
+class RecallMatch:
+    id: int
+    item_name: str
+    product_name: str | None
+    drug_inn_name: str | None
+    manufacturer: str | None
+    batch_number: str
+    location_name: str | None
+    quantity: int
+    status: str
+    expiry_date: str | None
+
+
+@dataclass
+class RecallBucket:
+    location_name: str
+    item_count: int
+    quantity: int
+
+
+@dataclass
+class RecallImpact:
+    total_items: int
+    total_quantity: int
+    matches: list[RecallMatch]
+    by_location: list[RecallBucket]
+    engine_took_ms: int

@@ -10,10 +10,13 @@ from apps.search.contracts import (
     InventoryQuery,
     InventoryResults,
     LowStockResult,
+    RecallImpact,
+    RecallQuery,
     StockQuery,
 )
 from apps.search.queries import availability as availability_query
 from apps.search.queries import expiry as expiry_query
+from apps.search.queries import recall as recall_query
 from apps.search.queries import search as search_query
 from apps.search.queries import stock as stock_query
 
@@ -36,6 +39,12 @@ def low_stock(query: StockQuery) -> LowStockResult:
     body = stock_query.build_body(query)
     response = client.search(body)
     return stock_query.parse_response(response, query)
+
+
+def recall_impact(query: RecallQuery) -> RecallImpact:
+    body = recall_query.build_body(query)
+    response = client.search(body)
+    return recall_query.parse_response(response)
 
 
 def availability(query: AvailabilityQuery) -> AvailabilityResult:
