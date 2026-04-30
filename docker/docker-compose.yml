@@ -136,6 +136,16 @@ services:
     container_name: meerkat-redis
     image: redis:7-alpine
 
+  dozzle:
+    container_name: meerkat-dozzle
+    image: amir20/dozzle:v8.13.7
+    ports:
+      - "${DOZZLE_PORT:-8088}:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_FILTER=label=com.docker.compose.project=meerkat
+
 volumes:
   postgres_data:
   redpanda_data:
