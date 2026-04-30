@@ -41,6 +41,12 @@
              {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
           Search
         </a>
+        <a href="{% url 'search:expiry' %}"
+           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
+             {% if current == 'expiry' %}bg-gray-800 text-white font-medium
+             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+          Expiry
+        </a>
         <a href="{% url 'catalog:inventory-receive' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
              {% if current == 'inventory-receive' %}bg-gray-800 text-white font-medium

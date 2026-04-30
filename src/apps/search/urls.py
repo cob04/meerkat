@@ -7,4 +7,5 @@ app_name = "search"
 urlpatterns = [
     path("", views.catalog_search, name="catalog-search"),
     path("availability/", views.availability, name="availability"),
+    path("expiry/", views.expiry, name="expiry"),
 ]

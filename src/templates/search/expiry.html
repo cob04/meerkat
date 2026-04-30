@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Expiry Dashboard - Meerkat{% endblock %}
+{% block page_title %}Expiry Dashboard{% endblock %}
+
+{% block content %}
+<form hx-get="{% url 'search:expiry' %}"
+      hx-target="#expiry-results"
+      hx-push-url="true"
+      hx-trigger="change">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Location</label>
+      <input type="text"
+             name="location"
+             value="{{ query.location|join:',' }}"
+             placeholder="Filter by location name"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Category</label>
+      <input type="text"
+             name="category"
+             value="{{ query.category|join:',' }}"
+             placeholder="Filter by category"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+  </div>
+
+  <div id="expiry-results">
+    {% include "search/_expiry.html" %}
+  </div>
+</form>
+{% endblock %}

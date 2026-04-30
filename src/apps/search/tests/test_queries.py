@@ -93,6 +93,31 @@ class TestFacetAggs:
 
 
 @pytest.mark.unit
+class TestExpiryBucketFilter:
+    def test_no_bucket_keeps_query_flat(self):
+        body = search.build_body(InventoryQuery(q="x"))
+
+        assert "bool" not in body["query"]
+
+    def test_bucket_wraps_query_with_range_filter(self):
+        body = search.build_body(InventoryQuery(q="x", expiry_bucket="30d"))
+
+        assert "bool" in body["query"]
+        filters = body["query"]["bool"]["filter"]
+        assert filters == [{"range": {"expiry_date": {"gte": "now/d", "lt": "now+30d/d"}}}]
+
+    def test_unknown_bucket_ignored(self):
+        body = search.build_body(InventoryQuery(q="x", expiry_bucket="bogus"))
+
+        assert "bool" not in body["query"]
+
+    def test_expired_bucket_uses_lt_today(self):
+        body = search.build_body(InventoryQuery(q="x", expiry_bucket="expired"))
+
+        assert body["query"]["bool"]["filter"] == [{"range": {"expiry_date": {"lt": "now/d"}}}]
+
+
+@pytest.mark.unit
 class TestParseResponse:
     def test_parses_hits_into_docs(self):
         response = {
