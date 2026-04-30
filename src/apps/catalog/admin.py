@@ -26,9 +26,10 @@ class DrugAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ["name", "location_type", "parent_location"]
+    list_display = ["name", "location_type", "parent_location", "latitude", "longitude"]
     list_filter = ["location_type"]
     search_fields = ["name"]
+    fields = ["name", "location_type", "address", "parent_location", "latitude", "longitude"]
 
 
 @admin.register(InventoryItem)

@@ -108,6 +108,12 @@
            class="flex w-full h-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
           Adjust
         </a>
+        {% if item.product %}
+        <a href="{% url 'search:availability' %}?product_id={{ item.product_id }}&from_location_id={{ item.location_id }}"
+           class="flex w-full h-9 items-center justify-center rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+          Network availability
+        </a>
+        {% endif %}
         <div class="pt-2 border-t border-border mt-2">
           <a href="{% url 'catalog:inventory-list' %}"
              class="flex w-full h-9 items-center justify-center rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">

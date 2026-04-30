@@ -107,15 +107,23 @@ def _build_inventory_doc(item_id: int) -> IndexAction | None:
         "expiry_date": item.expiry_date.isoformat() if item.expiry_date else None,
         "unit_cost": float(item.unit_cost),
         "status": item.status,
+        "location_id": item.location_id,
         "location_name": item.location.name,
         "location_type": item.location.location_type,
         "created_at": item.created_at.isoformat() if item.created_at else None,
         "updated_at": item.updated_at.isoformat() if item.updated_at else None,
     }
 
+    if item.location.has_coordinates:
+        doc["location_geo"] = {
+            "lat": float(item.location.latitude),
+            "lon": float(item.location.longitude),
+        }
+
     if item.product:
         doc.update(
             {
+                "product_id": item.product_id,
                 "product_name": item.product.name,
                 "product_sku": item.product.sku,
                 "product_category": item.product.category,
@@ -126,6 +134,7 @@ def _build_inventory_doc(item_id: int) -> IndexAction | None:
             drug = item.product.drug
             doc.update(
                 {
+                    "drug_id": drug.pk,
                     "drug_inn_name": drug.inn_name,
                     "drug_brand_name": drug.brand_name,
                     "drug_atc_code": drug.atc_code,

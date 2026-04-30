@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Cross-location Availability - Meerkat{% endblock %}
+{% block page_title %}Cross-location Availability{% endblock %}
+
+{% block content %}
+<form hx-get="{% url 'search:availability' %}"
+      hx-target="#availability-results"
+      hx-push-url="true"
+      hx-trigger="change">
+  {% if query.product_id %}
+    <input type="hidden" name="product_id" value="{{ query.product_id }}">
+  {% endif %}
+  {% if query.drug_id %}
+    <input type="hidden" name="drug_id" value="{{ query.drug_id }}">
+  {% endif %}
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Focus location</label>
+      <input type="number"
+             name="from_location_id"
+             value="{{ query.from_location_id|default:'' }}"
+             placeholder="Location ID"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Within (km)</label>
+      <input type="number"
+             name="max_distance_km"
+             value="{{ query.max_distance_km|default:'' }}"
+             min="1"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Sort</label>
+      <select name="sort"
+              class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+        <option value="distance" {% if query.sort == 'distance' %}selected{% endif %}>Nearest first</option>
+        <option value="-quantity" {% if query.sort == '-quantity' %}selected{% endif %}>Most stock first</option>
+        <option value="location" {% if query.sort == 'location' %}selected{% endif %}>Location name</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="availability-results">
+    {% include "search/_availability.html" %}
+  </div>
+</form>
+{% endblock %}

@@ -76,3 +76,49 @@ class InventoryResults:
     @property
     def has_prev(self) -> bool:
         return self.page > 1
+
+
+AVAILABILITY_SORTS = ("distance", "-quantity", "location")
+DEFAULT_AVAILABILITY_SORT_WITH_ORIGIN = "distance"
+DEFAULT_AVAILABILITY_SORT_WITHOUT_ORIGIN = "-quantity"
+
+
+@dataclass
+class AvailabilityQuery:
+    product_id: int | None = None
+    drug_id: int | None = None
+    from_location_id: int | None = None
+    max_distance_km: int | None = None
+    sort: str | None = None
+
+    def __post_init__(self):
+        if self.product_id is None and self.drug_id is None:
+            raise ValueError("AvailabilityQuery requires product_id or drug_id")
+        if self.sort is None:
+            self.sort = (
+                DEFAULT_AVAILABILITY_SORT_WITH_ORIGIN
+                if self.from_location_id
+                else DEFAULT_AVAILABILITY_SORT_WITHOUT_ORIGIN
+            )
+        if self.sort not in AVAILABILITY_SORTS:
+            raise ValueError(f"Unsupported sort: {self.sort}")
+
+
+@dataclass
+class LocationStock:
+    location_id: int
+    location_name: str
+    quantity: int
+    item_count: int
+    distance_km: float | None = None
+
+
+@dataclass
+class AvailabilityResult:
+    product_id: int | None
+    drug_id: int | None
+    total_quantity: int
+    total_items: int
+    by_location: list[LocationStock]
+    engine_took_ms: int
+    origin_resolved: bool = False

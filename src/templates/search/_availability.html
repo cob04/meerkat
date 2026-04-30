@@ -1,0 +1,51 @@
+{% if error == 'missing-target' %}
+  <div class="rounded-lg border border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+    Provide a <code>product_id</code> or <code>drug_id</code> to see network availability.
+  </div>
+{% elif result %}
+  <div class="mb-3 flex items-center justify-between text-sm text-muted-foreground">
+    <span>
+      {{ result.total_quantity|default:0 }} unit{{ result.total_quantity|pluralize }}
+      across {{ result.by_location|length }} location{{ result.by_location|length|pluralize }}
+      {% if not result.origin_resolved and query.from_location_id %}
+        <span class="ml-2 text-yellow-700">(focus location has no GPS pin -- distance unavailable)</span>
+      {% endif %}
+    </span>
+    <span class="tabular-nums">engine: {{ result.engine_took_ms }}ms</span>
+  </div>
+
+  <div class="rounded-lg border border-border">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-border bg-muted/50">
+          <th class="h-10 px-4 text-left font-medium text-muted-foreground">Location</th>
+          <th class="h-10 px-4 text-right font-medium text-muted-foreground">Distance</th>
+          <th class="h-10 px-4 text-right font-medium text-muted-foreground">Items</th>
+          <th class="h-10 px-4 text-right font-medium text-muted-foreground">Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in result.by_location %}
+          <tr class="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+            <td class="px-4 py-2.5 font-medium">{{ row.location_name|default:row.location_id }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums text-muted-foreground">
+              {% if row.distance_km is not None %}
+                {{ row.distance_km }} km
+              {% else %}
+                &mdash;
+              {% endif %}
+            </td>
+            <td class="px-4 py-2.5 text-right tabular-nums text-muted-foreground">{{ row.item_count }}</td>
+            <td class="px-4 py-2.5 text-right tabular-nums">{{ row.quantity }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="px-4 py-8 text-center text-muted-foreground">
+              No stock found in the network.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
