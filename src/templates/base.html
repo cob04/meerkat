@@ -8,10 +8,64 @@
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <script>
+    document.addEventListener("alpine:init", () => {
+      Alpine.store("toasts", {
+        items: [],
+        push({ message, kind = "success" }) {
+          const id = crypto.randomUUID();
+          const ttl = kind === "success" ? 4000 : 8000;
+          this.items.push({ id, message, kind, visible: true });
+          setTimeout(() => this.dismiss(id), ttl);
+        },
+        dismiss(id) {
+          const item = this.items.find((t) => t.id === id);
+          if (item) item.visible = false;
+          setTimeout(() => {
+            this.items = this.items.filter((t) => t.id !== id);
+          }, 200);
+        },
+      });
+    });
+    document.body.addEventListener("showToast", (event) => {
+      Alpine.store("toasts").push(event.detail);
+    });
+  </script>
 </head>
-<body class="bg-background text-foreground min-h-screen antialiased" hx-indicator="#loading">
+<body class="bg-background text-foreground min-h-screen antialiased"
+      hx-indicator="#loading"
+      hx-boost="true"
+      hx-target="#main"
+      hx-select="#main"
+      hx-swap="outerHTML show:window:top">
 
   <div id="loading" class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-primary z-50 animate-pulse"></div>
+
+  <div x-data="$store.toasts" class="fixed top-4 right-4 z-50 w-80 space-y-2" aria-live="polite">
+    <template x-for="toast in items" :key="toast.id">
+      <div role="status"
+           x-show="toast.visible"
+           x-transition:enter="transition ease-out duration-150"
+           x-transition:enter-start="opacity-0 translate-x-2"
+           x-transition:enter-end="opacity-100 translate-x-0"
+           x-transition:leave="transition ease-in duration-100"
+           x-transition:leave-start="opacity-100 translate-x-0"
+           x-transition:leave-end="opacity-0 translate-x-2"
+           class="rounded-md border px-4 py-3 text-sm shadow-md flex items-start gap-3"
+           :class="{
+             'bg-green-50 border-green-200 text-green-900': toast.kind === 'success',
+             'bg-yellow-50 border-yellow-200 text-yellow-900': toast.kind === 'warning',
+             'bg-red-50 border-red-200 text-red-900': toast.kind === 'error',
+             'bg-blue-50 border-blue-200 text-blue-900': toast.kind === 'info' || toast.kind === 'debug',
+           }">
+        <p class="flex-1" x-text="toast.message"></p>
+        <button type="button"
+                @click="dismiss(toast.id)"
+                class="text-current opacity-50 hover:opacity-100"
+                aria-label="Dismiss">&times;</button>
+      </div>
+    </template>
+  </div>
 
   <div class="flex min-h-screen" x-data="{ sidebarOpen: true }">
     <aside
@@ -90,7 +144,24 @@
       </nav>
     </aside>
 
-    <main class="flex-1 overflow-auto">
+    <main id="main" class="flex-1 overflow-auto">
+      {% if messages %}
+      <script>
+        (function () {
+          const items = [
+            {% for m in messages %}
+              { message: "{{ m|escapejs }}", kind: "{{ m.tags|default:'info'|escapejs }}" },
+            {% endfor %}
+          ];
+          const push = () => items.forEach(t => window.Alpine.store("toasts").push(t));
+          if (window.Alpine && window.Alpine.store("toasts")) {
+            push();
+          } else {
+            document.addEventListener("alpine:init", push);
+          }
+        })();
+      </script>
+      {% endif %}
       <div class="border-b border-border px-6 py-4 flex items-center gap-3">
         <button @click="sidebarOpen = !sidebarOpen" class="p-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
@@ -102,21 +173,6 @@
       </div>
 
       <div class="p-6">
-        {% if messages %}
-        <div class="mb-6 space-y-2">
-          {% for message in messages %}
-          <div class="flex items-center justify-between px-4 py-3 rounded-lg border text-sm
-            {% if message.tags == 'success' %}bg-green-50 text-green-900 border-green-200
-            {% elif message.tags == 'error' %}bg-red-50 text-red-900 border-red-200
-            {% else %}bg-blue-50 text-blue-900 border-blue-200{% endif %}"
-            x-data="{ show: true }" x-show="show" x-transition>
-            <span>{{ message }}</span>
-            <button @click="show = false" class="ml-4 text-current opacity-50 hover:opacity-100">&times;</button>
-          </div>
-          {% endfor %}
-        </div>
-        {% endif %}
-
         {% block content %}{% endblock %}
       </div>
     </main>
