@@ -69,6 +69,14 @@ def makemigrations(c):
     manage(c, "makemigrations")
 
 
+@task(name="seed-demo")
+def seed_demo(c, reset=False):
+    args = "seed_demo"
+    if reset:
+        args += " --reset"
+    manage(c, args)
+
+
 CDC_SERVICES = "redpanda redpanda-console connect opensearch cdc-consumer"
 
 
