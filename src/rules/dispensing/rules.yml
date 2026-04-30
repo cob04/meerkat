@@ -1,0 +1,50 @@
+rules:
+  - name: prescription_required
+    description: Drug requires a valid prescription before dispensing
+    when:
+      field: requires_prescription
+      equals: true
+    then:
+      effect: require
+      requires: prescription_reference
+      message: This drug requires a valid prescription
+
+  - name: controlled_substance_limit
+    description: Maximum single-dispense quantity for controlled substances
+    when:
+      field: schedule
+      in: [II, III]
+    then:
+      effect: require
+      requires: pharmacist_approval
+      max_quantity: 30
+      message: "Schedule {schedule} drugs limited to {max_quantity} units per dispense"
+
+  - name: schedule_one_block
+    description: Schedule I substances cannot be dispensed
+    when:
+      field: schedule
+      equals: I
+    then:
+      effect: block
+      message: Schedule I substances cannot be dispensed
+
+  - name: age_restriction
+    description: Certain drugs cannot be dispensed to minors
+    when:
+      field: age_restricted
+      equals: true
+    then:
+      effect: require
+      requires: age_verification
+      min_age: 18
+      message: Patient must be 18 or older
+
+  - name: refrigerated_only
+    description: Warn when dispensing cold-chain drugs
+    when:
+      field: storage_condition
+      equals: refrigerated
+    then:
+      effect: warn
+      message: This drug requires cold chain handling (2-8C)

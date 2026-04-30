@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.catalog import services
+from apps.catalog import rules, services
 from apps.catalog.forms import (
     AdjustStockForm,
     DispenseStockForm,
@@ -91,10 +91,17 @@ def receive_stock_view(request):
 
 
 def dispense_stock_view(request, pk):
-    item = get_object_or_404(InventoryItem.objects.select_related("location"), pk=pk)
+    item = get_object_or_404(
+        InventoryItem.objects.select_related("location", "product__drug"), pk=pk
+    )
+    actions = _evaluate_dispensing_rules(item, request)
+    blocked = any(action.effect == "block" for action in actions)
+
     if request.method == "POST":
         form = DispenseStockForm(request.POST)
-        if form.is_valid():
+        if blocked:
+            form.add_error(None, "Dispensing is blocked by a rule. See warnings above.")
+        elif form.is_valid():
             try:
                 services.dispense_stock(
                     item=item,
@@ -110,7 +117,18 @@ def dispense_stock_view(request, pk):
                 form.add_error(None, str(e))
     else:
         form = DispenseStockForm()
-    return render(request, "catalog/inventory/dispense_form.html", {"form": form, "item": item})
+    return render(
+        request,
+        "catalog/inventory/dispense_form.html",
+        {"form": form, "item": item, "rule_actions": actions, "blocked": blocked},
+    )
+
+
+def _evaluate_dispensing_rules(item: InventoryItem, request) -> list:
+    drug = getattr(item.product, "drug", None) if item.product else None
+    if drug is None:
+        return []
+    return rules.evaluate("dispensing", drug, context={})
 
 
 def transfer_stock_view(request, pk):
