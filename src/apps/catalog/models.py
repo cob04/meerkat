@@ -75,6 +75,8 @@ class Location(AuditModel):
     name = models.CharField(max_length=255)
     location_type = models.CharField(max_length=20, choices=LocationType.choices)
     address = models.TextField(blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     parent_location = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -82,6 +84,10 @@ class Location(AuditModel):
         blank=True,
         related_name="children",
     )
+
+    @property
+    def has_coordinates(self) -> bool:
+        return self.latitude is not None and self.longitude is not None
 
     class Meta:
         ordering = ["name"]

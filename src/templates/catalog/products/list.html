@@ -13,6 +13,7 @@
         <th class="h-10 px-4 text-left font-medium text-muted-foreground">Category</th>
         <th class="h-10 px-4 text-right font-medium text-muted-foreground">Price</th>
         <th class="h-10 px-4 text-left font-medium text-muted-foreground">Active</th>
+        <th class="h-10 px-4 text-right font-medium text-muted-foreground"></th>
       </tr>
     </thead>
     <tbody>
@@ -29,10 +30,16 @@
           <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border bg-gray-50 text-gray-600 border-gray-200">Inactive</span>
           {% endif %}
         </td>
+        <td class="px-4 py-2.5 text-right">
+          <a href="{% url 'search:availability' %}?product_id={{ product.id }}"
+             class="text-sm text-muted-foreground hover:text-foreground hover:underline">
+            View availability
+          </a>
+        </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">No products found.</td>
+        <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">No products found.</td>
       </tr>
       {% endfor %}
     </tbody>

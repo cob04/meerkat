@@ -2,7 +2,12 @@ from django.shortcuts import render
 
 from apps.search import services
 from apps.search.client import SearchUnavailable
-from apps.search.contracts import DEFAULT_PAGE_SIZE, InventoryQuery
+from apps.search.contracts import (
+    AVAILABILITY_SORTS,
+    DEFAULT_PAGE_SIZE,
+    AvailabilityQuery,
+    InventoryQuery,
+)
 
 
 def _render(request, full_template: str, partial_template: str, context: dict):
@@ -43,9 +48,60 @@ def catalog_search(request):
     )
 
 
+def availability(request):
+    product_id = _optional_int(request.GET.get("product_id"))
+    drug_id = _optional_int(request.GET.get("drug_id"))
+    if product_id is None and drug_id is None:
+        return _render(
+            request,
+            "search/availability.html",
+            "search/_availability.html",
+            {"error": "missing-target"},
+        )
+
+    sort = request.GET.get("sort") or None
+    if sort and sort not in AVAILABILITY_SORTS:
+        sort = None
+
+    query = AvailabilityQuery(
+        product_id=product_id,
+        drug_id=drug_id,
+        from_location_id=_optional_int(request.GET.get("from_location_id")),
+        max_distance_km=_optional_int(request.GET.get("max_distance_km")),
+        sort=sort,
+    )
+
+    try:
+        result = services.availability(query)
+    except SearchUnavailable:
+        return _render(
+            request,
+            "search/availability.html",
+            "search/_unavailable.html",
+            {"query": query},
+        )
+
+    return _render(
+        request,
+        "search/availability.html",
+        "search/_availability.html",
+        {"query": query, "result": result},
+    )
+
+
 def _int_param(raw: str | None, default: int, minimum: int) -> int:
     try:
         value = int(raw) if raw is not None else default
     except (TypeError, ValueError):
         value = default
     return max(value, minimum)
+
+
+def _optional_int(raw: str | None) -> int | None:
+    if raw in (None, ""):
+        return None
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value > 0 else None

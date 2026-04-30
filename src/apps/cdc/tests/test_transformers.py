@@ -99,6 +99,7 @@ class TestInventoryItemTransform:
         actions = transform(TOPIC_INVENTORY, event)
 
         doc = actions[0].document
+        assert doc["product_id"] == product.pk
         assert doc["product_name"] == "Aspirin"
         assert doc["product_sku"] == "ASP-100"
 
@@ -107,17 +108,36 @@ class TestInventoryItemTransform:
         actions = transform(TOPIC_INVENTORY, event)
 
         doc = actions[0].document
+        assert doc["drug_id"] == drug.pk
         assert doc["drug_inn_name"] == "Acetylsalicylic acid"
         assert doc["drug_atc_code"] == "N02BA01"
         assert doc["drug_dosage_form"] == "tablet"
 
-    def test_includes_location_fields(self, item):
+    def test_includes_location_fields(self, item, location):
         event = {"op": "c", "after": {"id": item.pk, "deleted_at": None}, "before": None}
         actions = transform(TOPIC_INVENTORY, event)
 
         doc = actions[0].document
+        assert doc["location_id"] == location.pk
         assert doc["location_name"] == "Warehouse A"
         assert doc["location_type"] == "warehouse"
+
+    def test_omits_location_geo_when_no_coordinates(self, item):
+        event = {"op": "c", "after": {"id": item.pk, "deleted_at": None}, "before": None}
+        actions = transform(TOPIC_INVENTORY, event)
+
+        assert "location_geo" not in actions[0].document
+
+    def test_includes_location_geo_when_coordinates_set(self, item, location):
+        location.latitude = Decimal("-1.286389")
+        location.longitude = Decimal("36.817223")
+        location.save()
+
+        event = {"op": "c", "after": {"id": item.pk, "deleted_at": None}, "before": None}
+        actions = transform(TOPIC_INVENTORY, event)
+
+        geo = actions[0].document["location_geo"]
+        assert geo == {"lat": -1.286389, "lon": 36.817223}
 
     def test_missing_item_returns_empty(self, db):
         event = {"op": "c", "after": {"id": 99999, "deleted_at": None}, "before": None}
