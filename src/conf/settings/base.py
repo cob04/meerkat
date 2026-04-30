@@ -89,6 +89,8 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "assets"]
 
+RULES_DIR = BASE_DIR / "rules"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CACHES = {

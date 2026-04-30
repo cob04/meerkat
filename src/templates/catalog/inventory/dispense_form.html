@@ -3,3 +3,23 @@
 {% block page_title %}Dispense Stock{% endblock %}
 {% block submit_label %}Dispense{% endblock %}
 {% block cancel_url %}{% url 'catalog:inventory-detail' item.pk %}{% endblock %}
+
+{% block pre_form %}
+{% if rule_actions %}
+<div class="mb-5 space-y-2">
+  {% for action in rule_actions %}
+    <div class="rounded-md border px-4 py-3 text-sm
+      {% if action.effect == 'block' %}border-red-200 bg-red-50 text-red-900
+      {% elif action.effect == 'require' %}border-yellow-200 bg-yellow-50 text-yellow-900
+      {% else %}border-blue-200 bg-blue-50 text-blue-900{% endif %}">
+      <div class="flex items-start gap-3">
+        <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border bg-white/60">
+          {{ action.effect|title }}
+        </span>
+        <p class="flex-1">{{ action.message }}</p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
