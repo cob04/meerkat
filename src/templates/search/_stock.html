@@ -1,0 +1,91 @@
+{% if result %}
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">Below threshold</div>
+      <div class="text-2xl font-semibold tabular-nums">{{ result.total_items }}</div>
+    </div>
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">Out of stock</div>
+      <div class="text-2xl font-semibold tabular-nums text-red-700">{{ result.out_of_stock }}</div>
+    </div>
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">Engine</div>
+      <div class="text-2xl font-semibold tabular-nums text-muted-foreground">{{ result.engine_took_ms }}ms</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="rounded-lg border border-border lg:col-span-2">
+      <div class="px-4 py-2.5 border-b border-border bg-muted/40 flex items-center justify-between">
+        <h3 class="text-sm font-medium">Items below {{ result.threshold }} units</h3>
+        <span class="text-xs text-muted-foreground">{{ result.items|length }} of {{ result.total_items }} shown</span>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Item</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Location</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Category</th>
+            <th class="h-9 px-4 text-right font-medium text-muted-foreground">Qty</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Expiry</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in result.items %}
+            <tr class="border-b border-border last:border-0 hover:bg-muted/30">
+              <td class="px-4 py-2">
+                <a href="{% url 'catalog:inventory-detail' item.id %}" class="font-medium hover:underline">
+                  {{ item.item_name }}
+                </a>
+              </td>
+              <td class="px-4 py-2 text-muted-foreground">{{ item.location_name|default:"-" }}</td>
+              <td class="px-4 py-2 text-muted-foreground">{{ item.category|default:"-" }}</td>
+              <td class="px-4 py-2 text-right tabular-nums {% if item.quantity == 0 %}text-red-700 font-semibold{% endif %}">
+                {{ item.quantity }}
+              </td>
+              <td class="px-4 py-2 text-muted-foreground">{{ item.expiry_date|default:"-" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" class="px-4 py-8 text-center text-muted-foreground">Nothing below threshold.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="space-y-6">
+      <div class="rounded-lg border border-border">
+        <div class="px-4 py-2.5 border-b border-border bg-muted/40">
+          <h3 class="text-sm font-medium">By location</h3>
+        </div>
+        <div class="divide-y divide-border">
+          {% for bucket in result.by_location %}
+            <a href="?threshold={{ result.threshold }}&location={{ bucket.key|urlencode }}"
+               class="flex items-center justify-between px-4 py-2 hover:bg-muted/30">
+              <span>{{ bucket.key }}</span>
+              <span class="tabular-nums text-muted-foreground">{{ bucket.count }}</span>
+            </a>
+          {% empty %}
+            <div class="px-4 py-3 text-sm text-muted-foreground">No locations.</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-border">
+        <div class="px-4 py-2.5 border-b border-border bg-muted/40">
+          <h3 class="text-sm font-medium">By category</h3>
+        </div>
+        <div class="divide-y divide-border">
+          {% for bucket in result.by_category %}
+            <a href="?threshold={{ result.threshold }}&category={{ bucket.key|urlencode }}"
+               class="flex items-center justify-between px-4 py-2 hover:bg-muted/30">
+              <span>{{ bucket.key }}</span>
+              <span class="tabular-nums text-muted-foreground">{{ bucket.count }}</span>
+            </a>
+          {% empty %}
+            <div class="px-4 py-3 text-sm text-muted-foreground">No categories.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}

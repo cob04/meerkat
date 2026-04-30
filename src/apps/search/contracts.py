@@ -168,3 +168,42 @@ class ExpiryRollup:
     by_location: list[LocationExpiry]
     by_category: list[CategoryExpiry]
     engine_took_ms: int
+
+
+DEFAULT_LOW_STOCK_THRESHOLD = 10
+LOW_STOCK_TOP_N = 50
+
+
+@dataclass
+class StockQuery:
+    threshold: int = DEFAULT_LOW_STOCK_THRESHOLD
+    location: list[str] = field(default_factory=list)
+    category: list[str] = field(default_factory=list)
+
+
+@dataclass
+class LowStockItem:
+    id: int
+    item_name: str
+    product_name: str | None
+    location_name: str | None
+    category: str | None
+    quantity: int
+    expiry_date: str | None
+
+
+@dataclass
+class StockBucket:
+    key: str
+    count: int
+
+
+@dataclass
+class LowStockResult:
+    threshold: int
+    total_items: int
+    out_of_stock: int
+    items: list[LowStockItem]
+    by_location: list[StockBucket]
+    by_category: list[StockBucket]
+    engine_took_ms: int

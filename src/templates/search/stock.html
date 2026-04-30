@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Low Stock - Meerkat{% endblock %}
+{% block page_title %}Low Stock{% endblock %}
+
+{% block content %}
+<form hx-get="{% url 'search:low-stock' %}"
+      hx-target="#stock-results"
+      hx-push-url="true"
+      hx-trigger="change">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Threshold</label>
+      <input type="number"
+             name="threshold"
+             value="{{ query.threshold }}"
+             min="1"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Location</label>
+      <input type="text"
+             name="location"
+             value="{{ query.location|join:',' }}"
+             placeholder="Filter by location"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5">Category</label>
+      <input type="text"
+             name="category"
+             value="{{ query.category|join:',' }}"
+             placeholder="Filter by category"
+             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm">
+    </div>
+  </div>
+
+  <div id="stock-results">
+    {% include "search/_stock.html" %}
+  </div>
+</form>
+{% endblock %}

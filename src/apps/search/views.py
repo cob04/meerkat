@@ -4,10 +4,12 @@ from apps.search import services
 from apps.search.client import SearchUnavailable
 from apps.search.contracts import (
     AVAILABILITY_SORTS,
+    DEFAULT_LOW_STOCK_THRESHOLD,
     DEFAULT_PAGE_SIZE,
     AvailabilityQuery,
     ExpiryQuery,
     InventoryQuery,
+    StockQuery,
 )
 
 
@@ -112,6 +114,33 @@ def expiry(request):
         "search/expiry.html",
         "search/_expiry.html",
         {"query": query, "rollup": rollup},
+    )
+
+
+def low_stock(request):
+    query = StockQuery(
+        threshold=_int_param(
+            request.GET.get("threshold"), default=DEFAULT_LOW_STOCK_THRESHOLD, minimum=1
+        ),
+        location=request.GET.getlist("location"),
+        category=request.GET.getlist("category"),
+    )
+
+    try:
+        result = services.low_stock(query)
+    except SearchUnavailable:
+        return _render(
+            request,
+            "search/stock.html",
+            "search/_unavailable.html",
+            {"query": query},
+        )
+
+    return _render(
+        request,
+        "search/stock.html",
+        "search/_stock.html",
+        {"query": query, "result": result},
     )
 
 

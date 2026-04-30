@@ -9,10 +9,13 @@ from apps.search.contracts import (
     ExpiryRollup,
     InventoryQuery,
     InventoryResults,
+    LowStockResult,
+    StockQuery,
 )
 from apps.search.queries import availability as availability_query
 from apps.search.queries import expiry as expiry_query
 from apps.search.queries import search as search_query
+from apps.search.queries import stock as stock_query
 
 EARTH_RADIUS_KM = 6371.0088
 
@@ -27,6 +30,12 @@ def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:
     body = expiry_query.build_body(query)
     response = client.search(body)
     return expiry_query.parse_response(response)
+
+
+def low_stock(query: StockQuery) -> LowStockResult:
+    body = stock_query.build_body(query)
+    response = client.search(body)
+    return stock_query.parse_response(response, query)
 
 
 def availability(query: AvailabilityQuery) -> AvailabilityResult:
