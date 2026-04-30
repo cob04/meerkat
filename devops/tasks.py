@@ -57,6 +57,7 @@ def fmt(c):
         f"{exec_web} {uv_run} black . && {exec_web} {uv_run} isort .",
         pty=True,
     )
+    tailwind_build(c)
 
 
 @task
