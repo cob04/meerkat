@@ -9,6 +9,7 @@ from apps.search.contracts import (
     AvailabilityQuery,
     ExpiryQuery,
     InventoryQuery,
+    RecallQuery,
     StockQuery,
 )
 
@@ -140,6 +141,41 @@ def low_stock(request):
         request,
         "search/stock.html",
         "search/_stock.html",
+        {"query": query, "result": result},
+    )
+
+
+def recall_lookup(request):
+    query = RecallQuery(
+        manufacturer=(request.GET.get("manufacturer") or "").strip() or None,
+        batch_pattern=(request.GET.get("batch_pattern") or "").strip() or None,
+        drug_id=_optional_int(request.GET.get("drug_id")),
+        created_from=(request.GET.get("created_from") or "").strip() or None,
+        created_to=(request.GET.get("created_to") or "").strip() or None,
+    )
+
+    if not query.has_criteria:
+        return _render(
+            request,
+            "search/recall.html",
+            "search/_recall.html",
+            {"query": query, "result": None},
+        )
+
+    try:
+        result = services.recall_impact(query)
+    except SearchUnavailable:
+        return _render(
+            request,
+            "search/recall.html",
+            "search/_unavailable.html",
+            {"query": query},
+        )
+
+    return _render(
+        request,
+        "search/recall.html",
+        "search/_recall.html",
         {"query": query, "result": result},
     )
 

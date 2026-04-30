@@ -1,0 +1,93 @@
+{% if not query.has_criteria %}
+  <div class="rounded-lg border border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+    Enter at least one criterion above to scope the recall lookup.
+  </div>
+{% elif result %}
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">Items affected</div>
+      <div class="text-2xl font-semibold tabular-nums">{{ result.total_items }}</div>
+    </div>
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">Total quantity</div>
+      <div class="text-2xl font-semibold tabular-nums">{{ result.total_quantity }}</div>
+    </div>
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="text-xs uppercase tracking-wide text-muted-foreground mb-1">Engine</div>
+      <div class="text-2xl font-semibold tabular-nums text-muted-foreground">{{ result.engine_took_ms }}ms</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="rounded-lg border border-border lg:col-span-2">
+      <div class="px-4 py-2.5 border-b border-border bg-muted/40 flex items-center justify-between">
+        <h3 class="text-sm font-medium">Matching items</h3>
+        <span class="text-xs text-muted-foreground">{{ result.matches|length }} of {{ result.total_items }} shown</span>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Item</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Batch</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Manufacturer</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Location</th>
+            <th class="h-9 px-4 text-right font-medium text-muted-foreground">Qty</th>
+            <th class="h-9 px-4 text-left font-medium text-muted-foreground">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for match in result.matches %}
+            <tr class="border-b border-border last:border-0 hover:bg-muted/30">
+              <td class="px-4 py-2">
+                <a href="{% url 'catalog:inventory-detail' match.id %}" class="font-medium hover:underline">
+                  {{ match.item_name }}
+                </a>
+              </td>
+              <td class="px-4 py-2 text-muted-foreground">{{ match.batch_number }}</td>
+              <td class="px-4 py-2 text-muted-foreground">{{ match.manufacturer|default:"-" }}</td>
+              <td class="px-4 py-2 text-muted-foreground">{{ match.location_name|default:"-" }}</td>
+              <td class="px-4 py-2 text-right tabular-nums">{{ match.quantity }}</td>
+              <td class="px-4 py-2">
+                <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border
+                  {% if match.status == 'available' %}bg-green-50 text-green-700 border-green-200
+                  {% elif match.status == 'recalled' %}bg-red-50 text-red-700 border-red-200
+                  {% elif match.status == 'expired' %}bg-gray-50 text-gray-600 border-gray-200
+                  {% else %}bg-yellow-50 text-yellow-700 border-yellow-200{% endif %}">
+                  {{ match.status|title }}
+                </span>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="px-4 py-8 text-center text-muted-foreground">No items match these criteria.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rounded-lg border border-border">
+      <div class="px-4 py-2.5 border-b border-border bg-muted/40">
+        <h3 class="text-sm font-medium">Impact by location</h3>
+      </div>
+      <div class="divide-y divide-border">
+        {% for bucket in result.by_location %}
+          <div class="px-4 py-2 flex items-center justify-between">
+            <span class="font-medium">{{ bucket.location_name }}</span>
+            <span class="text-xs text-muted-foreground tabular-nums">
+              {{ bucket.item_count }} item{{ bucket.item_count|pluralize }} / {{ bucket.quantity }} units
+            </span>
+          </div>
+        {% empty %}
+          <div class="px-4 py-3 text-sm text-muted-foreground">No locations affected.</div>
+        {% endfor %}
+      </div>
+      {% if result.matches %}
+        <div class="px-4 py-3 border-t border-border">
+          <a href="{% url 'catalog:inventory-recall' %}"
+             class="text-sm text-foreground hover:underline">
+            Proceed to recall workflow &rarr;
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
