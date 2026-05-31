@@ -139,6 +139,7 @@ def tailwind_image(c):
 )
 def e2e(c, test_path="e2e/", headed=False, keyword=""):
     """Run Playwright E2E tests against the running dev server."""
+    manage(c, "ensure_test_user")
     args = [test_path, "-v"]
     if keyword:
         args.append(f"-k '{keyword}'")
