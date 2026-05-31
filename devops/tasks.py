@@ -128,3 +128,24 @@ def tailwind_build(c):
 @task(name="tailwind-image")
 def tailwind_image(c):
     c.run(f"docker build --network=host -t meerkat-tailwind {ROOT}/docker/tailwind", pty=True)
+
+
+@task(
+    help={
+        "test_path": "Specific test file or directory (e.g. e2e/test_toast_notifications.py)",
+        "headed": "Run in headed mode (visible browser)",
+        "keyword": "Filter tests by keyword expression",
+    }
+)
+def e2e(c, test_path="e2e/", headed=False, keyword=""):
+    """Run Playwright E2E tests against the running dev server."""
+    args = [test_path, "-v"]
+    if keyword:
+        args.append(f"-k '{keyword}'")
+    args_str = " ".join(args)
+    browser_arg = "--headed" if headed else ""
+    c.run(
+        f"docker compose -f {ROOT}/docker/docker-compose.e2e.yml run --rm playwright "
+        f"pytest {args_str} {browser_arg}",
+        pty=True,
+    )

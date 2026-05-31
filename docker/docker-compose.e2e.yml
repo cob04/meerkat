@@ -1,0 +1,13 @@
+name: meerkat-e2e
+
+services:
+  playwright:
+    build:
+      context: ../
+      dockerfile: docker/playwright/Dockerfile
+    container_name: meerkat-playwright
+    network_mode: host
+    volumes:
+      - ../devops/playwright:/scripts
+      - ../screenshots:/screenshots
+    working_dir: /scripts
