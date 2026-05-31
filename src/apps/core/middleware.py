@@ -2,6 +2,7 @@ import json
 import threading
 
 from django.contrib.messages import get_messages
+from django.http import HttpResponse
 from django.utils.deprecation import MiddlewareMixin
 
 _thread_local = threading.local()
@@ -43,6 +44,32 @@ class HtmxMessagesMiddleware(MiddlewareMixin):
         triggers["showToast"] = toasts
         response["HX-Trigger"] = json.dumps(triggers)
         return response
+
+
+class HtmxRedirectMiddleware(MiddlewareMixin):
+    """Translate 30x redirects into HX-Location on HTMX requests so the address bar updates."""
+
+    def process_response(self, request, response):
+        if request.headers.get("HX-Request") != "true":
+            return response
+        if response.status_code not in (301, 302, 303, 307, 308):
+            return response
+        location = response.get("Location")
+        if not location:
+            return response
+
+        new_response = HttpResponse(status=204)
+        new_response["HX-Location"] = json.dumps(
+            {
+                "path": location,
+                "target": "#main",
+                "select": "#main",
+                "swap": "outerHTML show:window:top",
+            }
+        )
+        if response.get("HX-Trigger"):
+            new_response["HX-Trigger"] = response["HX-Trigger"]
+        return new_response
 
 
 _KIND_MAP = {

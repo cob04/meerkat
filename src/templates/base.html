@@ -27,8 +27,10 @@
         },
       });
     });
-    document.body.addEventListener("showToast", (event) => {
-      Alpine.store("toasts").push(event.detail);
+    document.addEventListener("showToast", (event) => {
+      const payload = event.detail && "value" in event.detail ? event.detail.value : event.detail;
+      const items = Array.isArray(payload) ? payload : [payload];
+      items.forEach((t) => Alpine.store("toasts").push(t));
     });
   </script>
 </head>

@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.test import RequestFactory, override_settings
 
-from apps.core.middleware import HtmxMessagesMiddleware
+from apps.core.middleware import HtmxMessagesMiddleware, HtmxRedirectMiddleware
 
 
 @pytest.fixture
@@ -119,3 +119,47 @@ class TestHtmxMessagesMiddleware:
 
         toasts = json.loads(result["HX-Trigger"])["showToast"]
         assert [t["kind"] for t in toasts] == ["info", "info"]
+
+
+@pytest.mark.unit
+class TestHtmxRedirectMiddleware:
+    def test_non_htmx_redirect_passes_through(self, factory):
+        request = factory.get("/")
+        response = HttpResponse(status=302)
+        response["Location"] = "/elsewhere/"
+
+        result = HtmxRedirectMiddleware(lambda r: response).process_response(request, response)
+
+        assert result is response
+        assert result.status_code == 302
+
+    def test_htmx_non_redirect_passes_through(self, factory):
+        request = factory.get("/", HTTP_HX_REQUEST="true")
+        response = HttpResponse(status=200)
+
+        result = HtmxRedirectMiddleware(lambda r: response).process_response(request, response)
+
+        assert result is response
+
+    def test_htmx_302_becomes_204_with_hx_location(self, factory):
+        request = factory.get("/", HTTP_HX_REQUEST="true")
+        response = HttpResponse(status=302)
+        response["Location"] = "/inventory/4/"
+
+        result = HtmxRedirectMiddleware(lambda r: response).process_response(request, response)
+
+        assert result.status_code == 204
+        payload = json.loads(result["HX-Location"])
+        assert payload["path"] == "/inventory/4/"
+        assert payload["target"] == "#main"
+
+    def test_carries_existing_hx_trigger(self, factory):
+        request = factory.get("/", HTTP_HX_REQUEST="true")
+        response = HttpResponse(status=302)
+        response["Location"] = "/inventory/4/"
+        response["HX-Trigger"] = json.dumps({"showToast": [{"message": "ok", "kind": "success"}]})
+
+        result = HtmxRedirectMiddleware(lambda r: response).process_response(request, response)
+
+        triggers = json.loads(result["HX-Trigger"])
+        assert triggers["showToast"][0]["message"] == "ok"

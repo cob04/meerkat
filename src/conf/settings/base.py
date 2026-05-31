@@ -41,6 +41,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.core.middleware.CurrentUserMiddleware",
+    "apps.core.middleware.HtmxRedirectMiddleware",
     "apps.core.middleware.HtmxMessagesMiddleware",
 ]
 
