@@ -34,3 +34,6 @@ src/assets/css/tailwind.out.css
 # Backups
 *.dump
 *.sql
+
+# E2E artifacts
+screenshots/
