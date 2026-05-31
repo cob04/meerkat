@@ -8,7 +8,7 @@
       {{ result.total_quantity|default:0 }} unit{{ result.total_quantity|pluralize }}
       across {{ result.by_location|length }} location{{ result.by_location|length|pluralize }}
       {% if not result.origin_resolved and query.from_location_id %}
-        <span class="ml-2 text-yellow-700">(focus location has no GPS pin -- distance unavailable)</span>
+        <span class="ml-2 text-warning">(focus location has no GPS pin -- distance unavailable)</span>
       {% endif %}
     </span>
     <span class="tabular-nums">engine: {{ result.engine_took_ms }}ms</span>

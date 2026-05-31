@@ -35,10 +35,10 @@
             <td class="px-4 py-2.5 text-muted-foreground">{{ item.expiry_date|default:"—" }}</td>
             <td class="px-4 py-2.5">
               <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border
-                {% if item.status == 'available' %}bg-green-50 text-green-700 border-green-200
-                {% elif item.status == 'reserved' %}bg-yellow-50 text-yellow-700 border-yellow-200
-                {% elif item.status == 'expired' %}bg-gray-50 text-gray-600 border-gray-200
-                {% elif item.status == 'recalled' %}bg-red-50 text-red-700 border-red-200
+                {% if item.status == 'available' %}bg-success-soft text-success border-success/30
+                {% elif item.status == 'reserved' %}bg-warning-soft text-warning border-warning/30
+                {% elif item.status == 'expired' %}bg-surface text-muted-foreground border-border
+                {% elif item.status == 'recalled' %}bg-danger-soft text-danger border-danger/30
                 {% endif %}">
                 {{ item.status|title }}
               </span>

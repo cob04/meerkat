@@ -25,9 +25,9 @@
         <td class="px-4 py-2.5 text-right tabular-nums">${{ product.unit_price }}</td>
         <td class="px-4 py-2.5">
           {% if product.is_active %}
-          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border bg-green-50 text-green-700 border-green-200">Active</span>
+          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border bg-success-soft text-success border-success/30">Active</span>
           {% else %}
-          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border bg-gray-50 text-gray-600 border-gray-200">Inactive</span>
+          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border bg-surface text-muted-foreground border-border">Inactive</span>
           {% endif %}
         </td>
         <td class="px-4 py-2.5 text-right">
