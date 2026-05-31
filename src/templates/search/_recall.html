@@ -49,10 +49,10 @@
               <td class="px-4 py-2 text-right tabular-nums">{{ match.quantity }}</td>
               <td class="px-4 py-2">
                 <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border
-                  {% if match.status == 'available' %}bg-green-50 text-green-700 border-green-200
-                  {% elif match.status == 'recalled' %}bg-red-50 text-red-700 border-red-200
-                  {% elif match.status == 'expired' %}bg-gray-50 text-gray-600 border-gray-200
-                  {% else %}bg-yellow-50 text-yellow-700 border-yellow-200{% endif %}">
+                  {% if match.status == 'available' %}bg-success-soft text-success border-success/30
+                  {% elif match.status == 'recalled' %}bg-danger-soft text-danger border-danger/30
+                  {% elif match.status == 'expired' %}bg-surface text-muted-foreground border-border
+                  {% else %}bg-warning-soft text-warning border-warning/30{% endif %}">
                   {{ match.status|title }}
                 </span>
               </td>

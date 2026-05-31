@@ -1,23 +1,103 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
-  --color-background: oklch(1 0 0);
-  --color-foreground: oklch(0.145 0.004 285.82);
-  --color-muted: oklch(0.97 0.001 286.38);
-  --color-muted-foreground: oklch(0.556 0.016 286.04);
-  --color-border: oklch(0.922 0.004 286.32);
-  --color-input: oklch(0.922 0.004 286.32);
-  --color-ring: oklch(0.606 0.25 292.72);
-  --color-primary: oklch(0.208 0.042 265.75);
-  --color-primary-foreground: oklch(0.984 0.003 247.86);
-  --color-accent: oklch(0.97 0.001 286.38);
-  --color-accent-foreground: oklch(0.145 0.004 285.82);
-  --color-destructive: oklch(0.577 0.245 27.33);
-  --color-destructive-foreground: oklch(0.577 0.245 27.33);
-  --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.145 0.004 285.82);
+  --color-bg: var(--bg);
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-card: var(--surface-2);
+  --color-card-foreground: var(--fg);
+  --color-sidebar: var(--sidebar-bg);
+  --color-sidebar-foreground: var(--sidebar-fg);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--border-strong);
+  --color-ring: var(--brand);
+
+  --color-foreground: var(--fg);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--fg-muted);
+  --color-subtle: var(--fg-subtle);
+  --color-accent: var(--surface);
+  --color-accent-foreground: var(--fg);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-primary: var(--brand);
+  --color-primary-foreground: #ffffff;
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #ffffff;
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --radius-lg: 0.5rem;
   --radius-md: calc(var(--radius-lg) - 2px);
   --radius-sm: calc(var(--radius-lg) - 4px);
+}
+
+:root {
+  --bg: #ffffff;
+  --surface: #f6f9fc;
+  --surface-2: #ffffff;
+  --border: #e3e8ee;
+  --border-strong: #cfd7df;
+  --fg: #0a2540;
+  --fg-muted: #425466;
+  --fg-subtle: #8898aa;
+  --brand: #635bff;
+  --brand-hover: #524bcc;
+  --brand-soft: #efeefe;
+  --success: #1f8a4c;
+  --success-soft: #e3fcec;
+  --warning: #b25e09;
+  --warning-soft: #fff5d6;
+  --danger: #cd3d64;
+  --danger-soft: #ffe3ea;
+  --info: #1e88e5;
+  --info-soft: #e3f2fd;
+  --sidebar-bg: #f6f9fc;
+  --sidebar-fg: #0a2540;
+}
+
+[data-theme="dark"] {
+  --bg: #1a1612;
+  --surface: #221c17;
+  --surface-2: #2a2320;
+  --border: #3a322b;
+  --border-strong: #4d4239;
+  --fg: #f5ece0;
+  --fg-muted: #c8baa6;
+  --fg-subtle: #8a7d6c;
+  --brand: #b59dff;
+  --brand-hover: #c9b6ff;
+  --brand-soft: #2e2540;
+  --success: #6cc98a;
+  --success-soft: #1c2f1f;
+  --warning: #ffa14a;
+  --warning-soft: #3a2615;
+  --danger: #ff7a64;
+  --danger-soft: #3a1a15;
+  --info: #e0b46a;
+  --info-soft: #2e2415;
+  --sidebar-bg: #181410;
+  --sidebar-fg: #f5ece0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }

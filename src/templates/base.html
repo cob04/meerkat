@@ -5,6 +5,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Meerkat{% endblock %}</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const theme = saved || (prefersDark ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tailwind.out.css' %}">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
@@ -26,6 +37,17 @@
           }, 200);
         },
       });
+      Alpine.store("theme", {
+        current: document.documentElement.getAttribute("data-theme") || "light",
+        set(value) {
+          this.current = value;
+          document.documentElement.setAttribute("data-theme", value);
+          localStorage.setItem("theme", value);
+        },
+        toggle() {
+          this.set(this.current === "dark" ? "light" : "dark");
+        },
+      });
     });
     document.addEventListener("showToast", (event) => {
       const payload = event.detail && "value" in event.detail ? event.detail.value : event.detail;
@@ -41,7 +63,7 @@
       hx-select="#main"
       hx-swap="outerHTML show:window:top">
 
-  <div id="loading" class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-primary z-50 animate-pulse"></div>
+  <div id="loading" class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-brand z-50 animate-pulse"></div>
 
   <div x-data="$store.toasts" class="fixed top-4 right-4 z-50 w-80 space-y-2" aria-live="polite">
     <template x-for="toast in items" :key="toast.id">
@@ -53,12 +75,12 @@
            x-transition:leave="transition ease-in duration-100"
            x-transition:leave-start="opacity-100 translate-x-0"
            x-transition:leave-end="opacity-0 translate-x-2"
-           class="rounded-md border px-4 py-3 text-sm shadow-md flex items-start gap-3"
+           class="rounded-md border px-4 py-3 text-sm shadow-md flex items-start gap-3 bg-card"
            :class="{
-             'bg-green-50 border-green-200 text-green-900': toast.kind === 'success',
-             'bg-yellow-50 border-yellow-200 text-yellow-900': toast.kind === 'warning',
-             'bg-red-50 border-red-200 text-red-900': toast.kind === 'error',
-             'bg-blue-50 border-blue-200 text-blue-900': toast.kind === 'info' || toast.kind === 'debug',
+             'border-success/30 text-success': toast.kind === 'success',
+             'border-warning/30 text-warning': toast.kind === 'warning',
+             'border-danger/30 text-danger': toast.kind === 'error',
+             'border-info/30 text-info': toast.kind === 'info' || toast.kind === 'debug',
            }">
         <p class="flex-1" x-text="toast.message"></p>
         <button type="button"
@@ -71,7 +93,7 @@
 
   <div class="flex min-h-screen" x-data="{ sidebarOpen: true }">
     <aside
-      class="w-56 bg-gray-900 text-gray-100 flex-shrink-0"
+      class="w-56 bg-sidebar text-sidebar-foreground border-r border-border flex-shrink-0"
       x-show="sidebarOpen"
       x-transition:enter="transition ease-out duration-150"
       x-transition:enter-start="opacity-0 -translate-x-2"
@@ -80,66 +102,67 @@
       x-transition:leave-start="opacity-100 translate-x-0"
       x-transition:leave-end="opacity-0 -translate-x-2"
     >
-      <div class="px-4 py-5">
-        <a href="{% url 'catalog:inventory-list' %}" class="text-lg font-semibold tracking-tight">Meerkat</a>
+      <div class="px-4 py-5 flex items-center gap-2.5">
+        <div class="w-6 h-6 rounded-md bg-gradient-to-br from-brand to-brand-hover shadow-sm"></div>
+        <a href="{% url 'catalog:inventory-list' %}" class="text-base font-semibold tracking-tight">Meerkat</a>
       </div>
       <nav class="px-3 space-y-0.5">
         {% with request.resolver_match.url_name as current %}
         <a href="{% url 'catalog:inventory-list' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'inventory-list' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'inventory-list' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Inventory
         </a>
         <a href="{% url 'search:catalog-search' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'catalog-search' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'catalog-search' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Search
         </a>
         <a href="{% url 'search:expiry' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'expiry' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'expiry' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Expiry
         </a>
         <a href="{% url 'search:low-stock' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'low-stock' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'low-stock' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Low Stock
         </a>
         <a href="{% url 'search:recall-lookup' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'recall-lookup' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'recall-lookup' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Recall Lookup
         </a>
         <a href="{% url 'catalog:inventory-receive' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'inventory-receive' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'inventory-receive' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Receive Stock
         </a>
         <a href="{% url 'catalog:inventory-recall' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'inventory-recall' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'inventory-recall' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Recall Batch
         </a>
         <div class="pt-3 pb-1">
-          <span class="px-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</span>
+          <span class="px-3 text-xs font-medium text-subtle uppercase tracking-wider">Reference</span>
         </div>
         <a href="{% url 'catalog:location-list' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'location-list' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'location-list' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Locations
         </a>
         <a href="{% url 'catalog:product-list' %}"
            class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'product-list' %}bg-gray-800 text-white font-medium
-             {% else %}text-gray-400 hover:bg-gray-800 hover:text-white{% endif %}">
+             {% if current == 'product-list' %}bg-brand-soft text-brand font-medium
+             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
           Products
         </a>
         {% endwith %}
@@ -172,6 +195,18 @@
         </button>
         <h1 class="text-lg font-semibold">{% block page_title %}{% endblock %}</h1>
         {% block page_actions %}{% endblock %}
+        <button
+          x-data
+          @click="$store.theme.toggle()"
+          class="ml-auto p-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground"
+          :aria-label="$store.theme.current === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+          <svg x-show="$store.theme.current === 'light'" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+          </svg>
+          <svg x-show="$store.theme.current === 'dark'" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+          </svg>
+        </button>
       </div>
 
       <div class="p-6">
