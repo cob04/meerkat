@@ -38,4 +38,5 @@ cache_dir = "/tmp/pytest_cache"
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
+    "e2e: Browser-driven end-to-end tests",
 ]
