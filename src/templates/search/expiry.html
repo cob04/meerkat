@@ -6,6 +6,8 @@
 {% block content %}
 <form hx-get="{% url 'search:expiry' %}"
       hx-target="#expiry-results"
+      hx-select="unset"
+      hx-swap="innerHTML"
       hx-push-url="true"
       hx-trigger="change">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">

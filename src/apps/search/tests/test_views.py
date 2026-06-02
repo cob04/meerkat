@@ -54,6 +54,19 @@ class TestCatalogSearchView:
         assert b"Panadol 500mg" in response.content
         assert b"<!DOCTYPE html" not in response.content
 
+    def test_boosted_request_renders_full_page(self, client):
+        with patch("apps.search.views.services.search_inventory", return_value=_fake_results()):
+            response = client.get(
+                reverse("search:catalog-search"),
+                {"q": "panadol"},
+                HTTP_HX_REQUEST="true",
+                HTTP_HX_BOOSTED="true",
+            )
+
+        assert response.status_code == 200
+        assert b"<!DOCTYPE html" in response.content
+        assert b"Drug name, brand, batch" in response.content
+
     def test_renders_unavailable_when_search_down(self, client):
         with patch(
             "apps.search.views.services.search_inventory",

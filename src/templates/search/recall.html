@@ -6,6 +6,8 @@
 {% block content %}
 <form hx-get="{% url 'search:recall-lookup' %}"
       hx-target="#recall-results"
+      hx-select="unset"
+      hx-swap="innerHTML"
       hx-push-url="true"
       hx-trigger="submit, change">
   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">

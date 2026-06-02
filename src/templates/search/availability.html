@@ -6,6 +6,8 @@
 {% block content %}
 <form hx-get="{% url 'search:availability' %}"
       hx-target="#availability-results"
+      hx-select="unset"
+      hx-swap="innerHTML"
       hx-push-url="true"
       hx-trigger="change">
   {% if query.product_id %}

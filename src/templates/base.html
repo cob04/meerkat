@@ -59,8 +59,8 @@
 <body class="bg-background text-foreground min-h-screen antialiased"
       hx-indicator="#loading"
       hx-boost="true"
-      hx-target="#main"
-      hx-select="#main"
+      hx-target="#shell"
+      hx-select="#shell"
       hx-swap="outerHTML show:window:top">
 
   <div id="loading" class="htmx-indicator fixed top-0 left-0 w-full h-0.5 bg-brand z-50 animate-pulse"></div>
@@ -91,9 +91,10 @@
     </template>
   </div>
 
-  <div class="flex min-h-screen" x-data="{ sidebarOpen: true }">
+  <div class="flex h-screen overflow-hidden" x-data="{ sidebarOpen: true }">
+   <div id="shell" class="contents">
     <aside
-      class="w-56 bg-sidebar text-sidebar-foreground border-r border-border flex-shrink-0"
+      class="w-[248px] bg-sidebar text-sidebar-foreground border-r border-border flex-shrink-0 flex flex-col py-4 px-3"
       x-show="sidebarOpen"
       x-transition:enter="transition ease-out duration-150"
       x-transition:enter-start="opacity-0 -translate-x-2"
@@ -102,74 +103,78 @@
       x-transition:leave-start="opacity-100 translate-x-0"
       x-transition:leave-end="opacity-0 -translate-x-2"
     >
-      <div class="px-4 py-5 flex items-center gap-2.5">
-        <div class="w-6 h-6 rounded-md bg-gradient-to-br from-brand to-brand-hover shadow-sm"></div>
-        <a href="{% url 'catalog:inventory-list' %}" class="text-base font-semibold tracking-tight">Meerkat</a>
-      </div>
-      <nav class="px-3 space-y-0.5">
+      <a href="{% url 'catalog:inventory-list' %}" class="flex items-center gap-2.5 px-3 pt-1 pb-4">
+        <div class="w-6 h-6 rounded-[7px] bg-gradient-to-br from-brand to-brand-hover shadow-sm flex-shrink-0"></div>
+        <div class="leading-tight">
+          <div class="text-sm font-semibold tracking-tight">Meerkat</div>
+          <div class="text-[11px] text-subtle">Goodlife Pharmacy</div>
+        </div>
+      </a>
+
+      <nav class="flex flex-col gap-0.5">
         {% with request.resolver_match.url_name as current %}
-        <a href="{% url 'catalog:inventory-list' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'inventory-list' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        {% with base="flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium rounded-md transition-colors" active="bg-brand-soft text-brand" idle="text-muted-foreground hover:bg-background hover:text-foreground" %}
+
+        <div class="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">Workspace</div>
+
+        <a href="{% url 'catalog:inventory-list' %}" class="{{ base }} {% if current == 'inventory-list' or current == 'inventory-detail' or current == 'inventory-dispense' or current == 'inventory-transfer' or current == 'inventory-adjust' or current == 'inventory-return' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a1 1 0 011 1v13a1 1 0 01-1 1H6a1 1 0 01-1-1V6a1 1 0 011-1h2M9 11h6M9 15h4"/></svg>
           Inventory
         </a>
-        <a href="{% url 'search:catalog-search' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'catalog-search' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        <a href="{% url 'search:catalog-search' %}" class="{{ base }} {% if current == 'catalog-search' or current == 'availability' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           Search
         </a>
-        <a href="{% url 'search:expiry' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'expiry' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        <a href="{% url 'search:expiry' %}" class="{{ base }} {% if current == 'expiry' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
           Expiry
         </a>
-        <a href="{% url 'search:low-stock' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'low-stock' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        <a href="{% url 'search:low-stock' %}" class="{{ base }} {% if current == 'low-stock' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l6 6 4-4 8 8M21 17h-5M21 17v-5"/></svg>
           Low Stock
         </a>
-        <a href="{% url 'search:recall-lookup' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'recall-lookup' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        <a href="{% url 'search:recall-lookup' %}" class="{{ base }} {% if current == 'recall-lookup' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10.3 4.3L2.6 18a2 2 0 001.7 3h15.4a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
           Recall Lookup
         </a>
-        <a href="{% url 'catalog:inventory-receive' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'inventory-receive' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+
+        <div class="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">Operations</div>
+
+        <a href="{% url 'catalog:inventory-receive' %}" class="{{ base }} {% if current == 'inventory-receive' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v10M8 11l4 4 4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
           Receive Stock
         </a>
-        <a href="{% url 'catalog:inventory-recall' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'inventory-recall' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        <a href="{% url 'catalog:inventory-recall' %}" class="{{ base }} {% if current == 'inventory-recall' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6l7-3z"/></svg>
           Recall Batch
         </a>
-        <div class="pt-3 pb-1">
-          <span class="px-3 text-xs font-medium text-subtle uppercase tracking-wider">Reference</span>
-        </div>
-        <a href="{% url 'catalog:location-list' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'location-list' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+
+        <div class="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle">Reference</div>
+
+        <a href="{% url 'catalog:location-list' %}" class="{{ base }} {% if current == 'location-list' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2"/></svg>
           Locations
         </a>
-        <a href="{% url 'catalog:product-list' %}"
-           class="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors
-             {% if current == 'product-list' %}bg-brand-soft text-brand font-medium
-             {% else %}text-muted-foreground hover:bg-surface hover:text-foreground{% endif %}">
+        <a href="{% url 'catalog:product-list' %}" class="{{ base }} {% if current == 'product-list' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg>
           Products
         </a>
         {% endwith %}
+        {% endwith %}
       </nav>
+
+      <div class="mt-auto pt-3 border-t border-border flex items-center gap-2.5 px-2">
+        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-brand to-brand-hover text-white grid place-items-center text-[11px] font-semibold flex-shrink-0">
+          {% if user.is_authenticated %}{{ user.get_full_name|default:user.username|slice:":2"|upper }}{% else %}GP{% endif %}
+        </div>
+        <div class="leading-tight min-w-0">
+          <div class="text-xs font-medium truncate">{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}Guest{% endif %}</div>
+          <div class="text-[11px] text-subtle truncate">{% if user.is_staff %}Administrator{% else %}Goodlife Pharmacy{% endif %}</div>
+        </div>
+      </div>
     </aside>
 
-    <main id="main" class="flex-1 overflow-auto">
+    <main id="main" class="flex-1 flex flex-col min-w-0">
       {% if messages %}
       <script>
         (function () {
@@ -187,7 +192,7 @@
         })();
       </script>
       {% endif %}
-      <div class="border-b border-border px-6 py-4 flex items-center gap-3">
+      <div class="border-b border-border px-6 py-4 flex items-center gap-3 shrink-0">
         <button @click="sidebarOpen = !sidebarOpen" class="p-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
@@ -209,10 +214,11 @@
         </button>
       </div>
 
-      <div class="p-6">
+      <div class="flex-1 overflow-auto p-6">
         {% block content %}{% endblock %}
       </div>
     </main>
+   </div>
   </div>
 
 </body>
