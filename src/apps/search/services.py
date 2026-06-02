@@ -5,6 +5,8 @@ from apps.search import client
 from apps.search.contracts import (
     AvailabilityQuery,
     AvailabilityResult,
+    CoverageQuery,
+    CoverageResult,
     ExpiryQuery,
     ExpiryRollup,
     InventoryQuery,
@@ -19,6 +21,7 @@ from apps.search.contracts import (
     ValueResult,
 )
 from apps.search.queries import availability as availability_query
+from apps.search.queries import coverage as coverage_query
 from apps.search.queries import expiry as expiry_query
 from apps.search.queries import recall as recall_query
 from apps.search.queries import search as search_query
@@ -67,6 +70,12 @@ def value_at_risk(query: ValueAtRiskQuery) -> ValueAtRiskResult:
     body = value_at_risk_query.build_body(query)
     response = client.search(body)
     return value_at_risk_query.parse_response(response, query)
+
+
+def network_coverage(query: CoverageQuery) -> CoverageResult:
+    body = coverage_query.build_body(query)
+    response = client.search(body)
+    return coverage_query.parse_response(response, query)
 
 
 def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:

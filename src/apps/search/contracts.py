@@ -257,6 +257,39 @@ class ValueAtRiskResult:
     engine_took_ms: int
 
 
+COVERAGE_PRODUCT_LIMIT = 1000
+SINGLE_SOURCE_TOP_N = 20
+
+
+@dataclass
+class CoverageQuery:
+    pass
+
+
+@dataclass
+class CoverageBand:
+    label: str
+    products: int
+
+
+@dataclass
+class SingleSourceProduct:
+    product: str
+    site: str
+    units: int
+    value: float
+
+
+@dataclass
+class CoverageResult:
+    products_in_stock: int
+    single_source_count: int
+    well_covered_count: int
+    coverage_bands: list[CoverageBand]
+    single_source: list[SingleSourceProduct]
+    engine_took_ms: int
+
+
 RECALL_TOP_N = 100
 
 
