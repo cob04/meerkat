@@ -13,4 +13,5 @@ urlpatterns = [
     path("insights/value/", views.inventory_value, name="inventory-value"),
     path("insights/value-at-risk/", views.value_at_risk, name="value-at-risk"),
     path("insights/coverage/", views.network_coverage, name="network-coverage"),
+    path("insights/composition/", views.catalog_composition, name="catalog-composition"),
 ]

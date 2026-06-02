@@ -139,6 +139,7 @@ def _build_inventory_doc(item_id: int) -> IndexAction | None:
                     "drug_inn_name": drug.inn_name,
                     "drug_brand_name": drug.brand_name,
                     "drug_atc_code": drug.atc_code,
+                    "drug_atc_class": drug.atc_code[0] if drug.atc_code else None,
                     "drug_dosage_form": drug.dosage_form,
                     "drug_strength": f"{drug.strength}{drug.unit}",
                     "drug_manufacturer": drug.manufacturer,

@@ -290,6 +290,23 @@ class CoverageResult:
     engine_took_ms: int
 
 
+@dataclass
+class CompositionQuery:
+    pass
+
+
+@dataclass
+class CompositionResult:
+    total_value: float
+    top_manufacturer: str
+    supplier_concentration: float
+    by_manufacturer: list[ValueBucket]
+    by_atc_class: list[ValueBucket]
+    by_dosage_form: list[ValueBucket]
+    by_prescription: list[ValueBucket]
+    engine_took_ms: int
+
+
 RECALL_TOP_N = 100
 
 
