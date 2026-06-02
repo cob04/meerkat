@@ -33,6 +33,7 @@ INVENTORY_MAPPING = {
             "quantity": {"type": "integer"},
             "expiry_date": {"type": "date"},
             "unit_cost": {"type": "scaled_float", "scaling_factor": 100},
+            "line_value": {"type": "scaled_float", "scaling_factor": 100},
             "status": {"type": "keyword"},
             "created_at": {"type": "date"},
             "updated_at": {"type": "date"},

@@ -78,3 +78,28 @@ class TestSuggest:
             side_effect=client.SearchUnavailable("down"),
         ):
             assert services.suggest("pan") == []
+
+
+@pytest.mark.unit
+class TestInventoryValue:
+    def test_builds_body_and_parses(self):
+        from apps.search.contracts import ValueQuery
+
+        fake_response = {
+            "took": 2,
+            "hits": {"total": {"value": 3}},
+            "aggregations": {
+                "total_value": {"value": 999.0},
+                "total_quantity": {"value": 30.0},
+                "by_location": {"buckets": []},
+                "by_category": {"buckets": []},
+                "by_manufacturer": {"buckets": []},
+            },
+        }
+        with patch("apps.search.services.client.search", return_value=fake_response) as mock_search:
+            result = services.inventory_value(ValueQuery())
+
+        body = mock_search.call_args.args[0]
+        assert body["aggs"]["total_value"]["sum"]["field"] == "line_value"
+        assert result.total_value == 999.0
+        assert result.total_items == 3

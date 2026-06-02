@@ -11,6 +11,7 @@ from apps.search.contracts import (
     InventoryQuery,
     RecallQuery,
     StockQuery,
+    ValueQuery,
 )
 
 
@@ -18,6 +19,14 @@ def _render(request, full_template: str, partial_template: str, context: dict):
     is_partial = request.headers.get("HX-Request") and not request.headers.get("HX-Boosted")
     template = partial_template if is_partial else full_template
     return render(request, template, context)
+
+
+def inventory_value(request):
+    try:
+        result = services.inventory_value(ValueQuery())
+    except SearchUnavailable:
+        result = None
+    return render(request, "search/value.html", {"result": result})
 
 
 def catalog_search(request):
