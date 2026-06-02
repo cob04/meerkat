@@ -1,7 +1,9 @@
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 
-from apps.catalog.models import Drug, InventoryItem, Location, Product
+from apps.catalog.models import Drug, InventoryItem, Location, Product, StockMovement
+from apps.core.models import AuditEvent
 
 
 @pytest.mark.integration
@@ -42,3 +44,18 @@ class TestSeedDemoCommand:
 
         assert before > 0
         assert after == 5
+
+    def test_seeds_movement_and_audit_history(self):
+        call_command("seed_demo", "--items=20")
+
+        assert StockMovement.objects.exists()
+        assert AuditEvent.objects.exists()
+        assert get_user_model().objects.filter(username="demo").exists()
+
+    def test_reset_clears_movements(self):
+        call_command("seed_demo", "--items=10")
+        assert StockMovement.objects.exists()
+        call_command("seed_demo", "--items=5", "--reset")
+
+        assert StockMovement.objects.count() > 0
+        assert StockMovement.objects.filter(inventory_item__isnull=True).count() == 0
