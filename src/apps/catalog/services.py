@@ -1,6 +1,9 @@
-from django.contrib.auth import get_user_model
+from dataclasses import dataclass
 
-from apps.catalog.models import InventoryItem, Location, Product, StockMovement
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Q
+
+from apps.catalog.models import Drug, InventoryItem, Location, Product, StockMovement
 from apps.core.models import AuditEvent
 
 User = get_user_model()
@@ -290,3 +293,187 @@ def return_stock(
     )
 
     return movement
+
+
+@dataclass
+class FacetOption:
+    value: str
+    label: str
+    count: int
+    selected: bool
+
+
+@dataclass
+class FacetGroup:
+    param: str
+    label: str
+    options: list[FacetOption]
+
+
+@dataclass
+class SearchResults:
+    items: list
+    total: int
+    facets: list[FacetGroup]
+
+
+def _terms_facet(base_qs, field, param, label, selected, labels=None):
+    options = []
+    for row in base_qs.values(field).annotate(count=Count("id")).order_by("-count", field):
+        value = row[field]
+        if value in (None, ""):
+            continue
+        options.append(
+            FacetOption(
+                value=str(value),
+                label=str(labels.get(value, value)) if labels else str(value),
+                count=row["count"],
+                selected=str(value) in selected,
+            )
+        )
+    return FacetGroup(param=param, label=label, options=options)
+
+
+def _choice_facet(base_qs, param, label, selected, specs):
+    options = [
+        FacetOption(
+            value=value, label=lbl, count=base_qs.filter(cond).count(), selected=value in selected
+        )
+        for value, lbl, cond in specs
+    ]
+    return FacetGroup(param=param, label=label, options=options)
+
+
+def search_products(
+    q=None,
+    categories=None,
+    types=None,
+    dosage_forms=None,
+    prescription=None,
+    active=None,
+) -> SearchResults:
+    """Filter the product catalog by text and facets, with counts over the text match."""
+    categories = categories or []
+    types = types or []
+    dosage_forms = dosage_forms or []
+    prescription = prescription or []
+    active = active or []
+
+    base = Product.objects.select_related("drug")
+    if q:
+        base = base.filter(Q(name__icontains=q) | Q(sku__icontains=q))
+
+    items = base
+    if categories:
+        items = items.filter(category__in=categories)
+    if types:
+        type_cond = Q()
+        if "drug" in types:
+            type_cond |= Q(drug__isnull=False)
+        if "non_drug" in types:
+            type_cond |= Q(drug__isnull=True)
+        items = items.filter(type_cond)
+    if dosage_forms:
+        items = items.filter(drug__dosage_form__in=dosage_forms)
+    if prescription:
+        presc_cond = Q()
+        if "yes" in prescription:
+            presc_cond |= Q(drug__requires_prescription=True)
+        if "no" in prescription:
+            presc_cond |= Q(drug__requires_prescription=False)
+        items = items.filter(presc_cond)
+    if active:
+        active_cond = Q()
+        if "yes" in active:
+            active_cond |= Q(is_active=True)
+        if "no" in active:
+            active_cond |= Q(is_active=False)
+        items = items.filter(active_cond)
+
+    ordered = list(items.order_by("name"))
+    facets = [
+        _terms_facet(base, "category", "category", "Category", categories),
+        _choice_facet(
+            base,
+            "type",
+            "Type",
+            types,
+            [
+                ("drug", "Drug", Q(drug__isnull=False)),
+                ("non_drug", "Non-drug", Q(drug__isnull=True)),
+            ],
+        ),
+        _terms_facet(
+            base,
+            "drug__dosage_form",
+            "dosage_form",
+            "Dosage form",
+            dosage_forms,
+            labels=dict(Drug.DosageForm.choices),
+        ),
+        _choice_facet(
+            base,
+            "prescription",
+            "Prescription",
+            prescription,
+            [
+                ("yes", "Required", Q(drug__requires_prescription=True)),
+                ("no", "Not required", Q(drug__requires_prescription=False)),
+            ],
+        ),
+        _choice_facet(
+            base,
+            "active",
+            "Status",
+            active,
+            [
+                ("yes", "Active", Q(is_active=True)),
+                ("no", "Inactive", Q(is_active=False)),
+            ],
+        ),
+    ]
+    return SearchResults(items=ordered, total=len(ordered), facets=facets)
+
+
+def search_locations(q=None, types=None, gps=None) -> SearchResults:
+    """Filter locations by text and facets, with counts over the text match."""
+    types = types or []
+    gps = gps or []
+
+    base = Location.objects.all()
+    if q:
+        base = base.filter(Q(name__icontains=q) | Q(address__icontains=q))
+
+    items = base
+    if types:
+        items = items.filter(location_type__in=types)
+    if gps:
+        gps_cond = Q()
+        if "yes" in gps:
+            gps_cond |= Q(latitude__isnull=False, longitude__isnull=False)
+        if "no" in gps:
+            gps_cond |= Q(latitude__isnull=True) | Q(longitude__isnull=True)
+        items = items.filter(gps_cond)
+
+    ordered = list(items.order_by("name"))
+    facets = [
+        _terms_facet(
+            base,
+            "location_type",
+            "type",
+            "Type",
+            types,
+            labels=dict(Location.LocationType.choices),
+        ),
+        _choice_facet(
+            base,
+            "gps",
+            "GPS",
+            gps,
+            [
+                ("yes", "Has coordinates", Q(latitude__isnull=False, longitude__isnull=False)),
+                ("no", "No coordinates", Q(latitude__isnull=True) | Q(longitude__isnull=True)),
+            ],
+        ),
+    ]
+    return SearchResults(items=ordered, total=len(ordered), facets=facets)

@@ -1,0 +1,34 @@
+<div class="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6">
+  {% include "catalog/_facets.html" %}
+
+  <div>
+    <div class="mb-3 text-sm text-muted-foreground">{{ results.total }} location{{ results.total|pluralize }}</div>
+
+    <div class="rounded-lg border border-border">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border bg-muted/50">
+            <th class="h-10 px-4 text-left font-medium text-muted-foreground">Name</th>
+            <th class="h-10 px-4 text-left font-medium text-muted-foreground">Type</th>
+            <th class="h-10 px-4 text-left font-medium text-muted-foreground">Parent</th>
+            <th class="h-10 px-4 text-left font-medium text-muted-foreground">Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for loc in results.items %}
+          <tr class="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+            <td class="px-4 py-2.5 font-medium">{{ loc.name }}</td>
+            <td class="px-4 py-2.5 text-muted-foreground">{{ loc.get_location_type_display }}</td>
+            <td class="px-4 py-2.5 text-muted-foreground">{{ loc.parent_location.name|default:"-" }}</td>
+            <td class="px-4 py-2.5 text-muted-foreground">{{ loc.address|default:"-"|truncatewords:10 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="px-4 py-8 text-center text-muted-foreground">No locations found.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

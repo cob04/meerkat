@@ -4,13 +4,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 from django.contrib.auth import get_user_model
 
-from apps.catalog.models import InventoryItem, Location, Product, StockMovement
+from apps.catalog.models import Drug, InventoryItem, Location, Product, StockMovement
 from apps.catalog.services import (
     adjust_stock,
     dispense_stock,
     recall_batch,
     receive_stock,
     return_stock,
+    search_locations,
+    search_products,
     transfer_stock,
 )
 
@@ -307,3 +309,111 @@ class TestReturnStock:
 
         with pytest.raises(ValueError, match="expired"):
             return_stock(item=item, quantity=10, user=user)
+
+
+def _make_product(name, sku, category, active=True, drug=None):
+    product = Product.objects.create(
+        name=name, sku=sku, category=category, unit_price=Decimal("1.00"), is_active=active
+    )
+    if drug is not None:
+        Drug.objects.create(
+            product=product,
+            inn_name=name,
+            atc_code=drug.get("atc", "X00"),
+            dosage_form=drug["dosage_form"],
+            strength="500",
+            unit="mg",
+            requires_prescription=drug.get("rx", False),
+        )
+    return product
+
+
+def _facet_counts(results, param):
+    group = next(g for g in results.facets if g.param == param)
+    return {opt.value: opt.count for opt in group.options}
+
+
+@pytest.mark.integration
+@pytest.mark.django_db
+class TestSearchProducts:
+    @pytest.fixture(autouse=True)
+    def _catalog(self):
+        _make_product(
+            "Amoxicillin", "DRUG-1", "antibiotic", drug={"dosage_form": "tablet", "rx": True}
+        )
+        _make_product(
+            "Paracetamol", "DRUG-2", "analgesic", drug={"dosage_form": "tablet", "rx": False}
+        )
+        _make_product(
+            "Insulin", "DRUG-3", "diabetes", drug={"dosage_form": "injection", "rx": True}
+        )
+        _make_product("Surgical gloves", "SUP-1", "supplies")
+        _make_product("Old device", "DEV-1", "devices", active=False)
+
+    def test_returns_all_without_filters(self):
+        assert search_products().total == 5
+
+    def test_text_matches_name_or_sku(self):
+        assert {p.name for p in search_products(q="amox").items} == {"Amoxicillin"}
+        assert {p.name for p in search_products(q="sup-1").items} == {"Surgical gloves"}
+
+    def test_category_filter(self):
+        assert {p.name for p in search_products(categories=["antibiotic"]).items} == {"Amoxicillin"}
+
+    def test_type_filter(self):
+        assert search_products(types=["drug"]).total == 3
+        assert search_products(types=["non_drug"]).total == 2
+
+    def test_dosage_and_prescription_filters(self):
+        assert {p.name for p in search_products(dosage_forms=["injection"]).items} == {"Insulin"}
+        assert search_products(prescription=["yes"]).total == 2
+        assert {p.name for p in search_products(prescription=["no"]).items} == {"Paracetamol"}
+
+    def test_active_filter(self):
+        assert {p.name for p in search_products(active=["no"]).items} == {"Old device"}
+
+    def test_facet_counts_over_full_set(self):
+        results = search_products()
+        assert _facet_counts(results, "type") == {"drug": 3, "non_drug": 2}
+        assert _facet_counts(results, "category")["antibiotic"] == 1
+
+    def test_facet_counts_reflect_text_filter(self):
+        results = search_products(q="insulin")
+        assert _facet_counts(results, "type") == {"drug": 1, "non_drug": 0}
+
+
+@pytest.mark.integration
+@pytest.mark.django_db
+class TestSearchLocations:
+    @pytest.fixture(autouse=True)
+    def _locations(self):
+        Location.objects.create(
+            name="Westlands Pharmacy",
+            location_type=Location.LocationType.PHARMACY,
+            latitude=Decimal("-1.2657"),
+            longitude=Decimal("36.8124"),
+        )
+        Location.objects.create(
+            name="Central Warehouse",
+            location_type=Location.LocationType.WAREHOUSE,
+            latitude=Decimal("-1.3000"),
+            longitude=Decimal("36.8000"),
+        )
+        Location.objects.create(name="Ward A", location_type=Location.LocationType.WARD)
+
+    def test_text_matches_name(self):
+        assert {loc.name for loc in search_locations(q="ward").items} == {"Ward A"}
+
+    def test_type_filter(self):
+        assert {loc.name for loc in search_locations(types=["pharmacy"]).items} == {
+            "Westlands Pharmacy"
+        }
+
+    def test_gps_filter(self):
+        assert search_locations(gps=["yes"]).total == 2
+        assert {loc.name for loc in search_locations(gps=["no"]).items} == {"Ward A"}
+
+    def test_facet_counts(self):
+        results = search_locations()
+        assert _facet_counts(results, "type") == {"pharmacy": 1, "warehouse": 1, "ward": 1}
+        assert _facet_counts(results, "gps") == {"yes": 2, "no": 1}

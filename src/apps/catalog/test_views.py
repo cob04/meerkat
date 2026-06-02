@@ -256,6 +256,24 @@ class TestLocationListView:
         assert response.status_code == 200
         assert b"Main Warehouse" in response.content
 
+    def test_htmx_returns_partial(self, client, location):
+        response = client.get(reverse("catalog:location-list"), HTTP_HX_REQUEST="true")
+        assert response.status_code == 200
+        assert b"<table" in response.content
+        assert b"<!DOCTYPE" not in response.content
+
+    def test_boosted_returns_full_page(self, client, location):
+        response = client.get(
+            reverse("catalog:location-list"), HTTP_HX_REQUEST="true", HTTP_HX_BOOSTED="true"
+        )
+        assert b"<!DOCTYPE" in response.content
+
+    def test_search_and_type_facet_narrow_results(self, client, location):
+        Location.objects.create(name="Pharmacy B", location_type=Location.LocationType.PHARMACY)
+        body = client.get(reverse("catalog:location-list"), {"type": "pharmacy"}).content.decode()
+        assert "Pharmacy B" in body
+        assert "Main Warehouse" not in body
+
 
 @pytest.mark.integration
 class TestProductListView:
@@ -264,3 +282,35 @@ class TestProductListView:
         response = client.get(reverse("catalog:product-list"))
         assert response.status_code == 200
         assert b"Test Product" in response.content
+
+    def test_htmx_returns_partial(self, client):
+        Product.objects.create(name="Test Product", sku="TP-001", unit_price=Decimal("10.00"))
+        response = client.get(reverse("catalog:product-list"), HTTP_HX_REQUEST="true")
+        assert b"<table" in response.content
+        assert b"<!DOCTYPE" not in response.content
+
+    def test_boosted_returns_full_page(self, client):
+        response = client.get(
+            reverse("catalog:product-list"), HTTP_HX_REQUEST="true", HTTP_HX_BOOSTED="true"
+        )
+        assert b"<!DOCTYPE" in response.content
+
+    def test_search_narrows_results(self, client):
+        Product.objects.create(name="Amoxicillin", sku="A-1", unit_price=Decimal("1.00"))
+        Product.objects.create(name="Paracetamol", sku="P-1", unit_price=Decimal("1.00"))
+        body = client.get(reverse("catalog:product-list"), {"q": "amox"}).content.decode()
+        assert "Amoxicillin" in body
+        assert "Paracetamol" not in body
+
+    def test_category_facet_narrows_results(self, client):
+        Product.objects.create(
+            name="Amoxicillin", sku="A-1", category="antibiotic", unit_price=Decimal("1.00")
+        )
+        Product.objects.create(
+            name="Gloves", sku="G-1", category="supplies", unit_price=Decimal("1.00")
+        )
+        body = client.get(
+            reverse("catalog:product-list"), {"category": "antibiotic"}
+        ).content.decode()
+        assert "Amoxicillin" in body
+        assert "Gloves" not in body

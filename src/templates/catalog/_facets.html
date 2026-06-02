@@ -1,0 +1,22 @@
+<aside class="space-y-5">
+  {% for group in results.facets %}
+  {% if group.options %}
+  <div>
+    <h3 class="text-sm font-medium mb-2">{{ group.label }}</h3>
+    <div class="space-y-1">
+      {% for opt in group.options %}
+      <label class="flex items-center justify-between text-sm cursor-pointer hover:text-foreground">
+        <span class="flex items-center gap-2">
+          <input type="checkbox" name="{{ group.param }}" value="{{ opt.value }}"
+                 {% if opt.selected %}checked{% endif %}
+                 class="h-3.5 w-3.5 rounded border-input">
+          <span>{{ opt.label }}</span>
+        </span>
+        <span class="text-xs text-muted-foreground tabular-nums">{{ opt.count }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</aside>
