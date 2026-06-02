@@ -1,3 +1,15 @@
+FROM alpine:3.21 AS css
+
+RUN apk add --no-cache curl libstdc++ libgcc \
+    && curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.3/tailwindcss-linux-x64-musl \
+    && chmod +x tailwindcss-linux-x64-musl \
+    && mv tailwindcss-linux-x64-musl /usr/local/bin/tailwindcss
+
+WORKDIR /app
+COPY src/ /app/
+RUN tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.out.css --minify
+
+
 FROM python:3.14-slim AS development
 
 EXPOSE 8000
@@ -43,6 +55,14 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --project src --frozen --n
     && chown -R meerkat:meerkat /opt/venv
 
 COPY src/ /opt/meerkat/src/
+COPY --from=css /app/assets/css/tailwind.out.css /opt/meerkat/src/assets/css/tailwind.out.css
+
+RUN DJANGO_SETTINGS_MODULE=conf.settings.prod \
+    DJANGO_SECRET_KEY=build-only \
+    POSTGRES_PASSWORD=build-only \
+    ALLOWED_HOSTS=localhost \
+    python /opt/meerkat/src/manage.py collectstatic --noinput --ignore input.css
+
 RUN chown -R meerkat:meerkat /opt/meerkat
 
 USER meerkat
