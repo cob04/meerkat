@@ -6,6 +6,22 @@ from opensearchpy import OpenSearch
 logger = logging.getLogger(__name__)
 
 INVENTORY_INDEX = f"{settings.OPENSEARCH_INDEX_PREFIX}_inventory_items"
+MOVEMENTS_INDEX = f"{settings.OPENSEARCH_INDEX_PREFIX}_stock_movements"
+
+MOVEMENTS_MAPPING = {
+    "mappings": {
+        "properties": {
+            "movement_type": {"type": "keyword"},
+            "quantity": {"type": "integer"},
+            "item_name": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+            "product_name": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+            "product_category": {"type": "keyword"},
+            "location_name": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
+            "performed_by": {"type": "keyword"},
+            "created_at": {"type": "date"},
+        }
+    }
+}
 
 INVENTORY_MAPPING = {
     "mappings": {
@@ -51,22 +67,26 @@ def get_client() -> OpenSearch:
     )
 
 
-def create_index(client: OpenSearch, recreate: bool = False):
-    if client.indices.exists(index=INVENTORY_INDEX):
+def _create(client: OpenSearch, index: str, mapping: dict, recreate: bool):
+    if client.indices.exists(index=index):
         if recreate:
-            client.indices.delete(index=INVENTORY_INDEX)
-            logger.info("Deleted index %s", INVENTORY_INDEX)
+            client.indices.delete(index=index)
+            logger.info("Deleted index %s", index)
         else:
-            logger.info("Index %s already exists", INVENTORY_INDEX)
+            logger.info("Index %s already exists", index)
             return
-
-    client.indices.create(index=INVENTORY_INDEX, body=INVENTORY_MAPPING)
-    logger.info("Created index %s", INVENTORY_INDEX)
-
-
-def index_document(client: OpenSearch, doc_id: int, document: dict):
-    client.index(index=INVENTORY_INDEX, id=doc_id, body=document)
+    client.indices.create(index=index, body=mapping)
+    logger.info("Created index %s", index)
 
 
-def delete_document(client: OpenSearch, doc_id: int):
-    client.delete(index=INVENTORY_INDEX, id=doc_id, ignore=[404])
+def create_index(client: OpenSearch, recreate: bool = False):
+    _create(client, INVENTORY_INDEX, INVENTORY_MAPPING, recreate)
+    _create(client, MOVEMENTS_INDEX, MOVEMENTS_MAPPING, recreate)
+
+
+def index_document(client: OpenSearch, doc_id: int, document: dict, index: str = INVENTORY_INDEX):
+    client.index(index=index, id=doc_id, body=document)
+
+
+def delete_document(client: OpenSearch, doc_id: int, index: str = INVENTORY_INDEX):
+    client.delete(index=index, id=doc_id, ignore=[404])

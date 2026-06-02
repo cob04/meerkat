@@ -14,6 +14,7 @@ from apps.cdc.transformers import (
     TOPIC_DRUG,
     TOPIC_INVENTORY,
     TOPIC_LOCATION,
+    TOPIC_MOVEMENT,
     TOPIC_PRODUCT,
     DeleteAction,
     IndexAction,
@@ -22,7 +23,7 @@ from apps.cdc.transformers import (
 
 logger = logging.getLogger(__name__)
 
-TOPICS = [TOPIC_INVENTORY, TOPIC_PRODUCT, TOPIC_DRUG, TOPIC_LOCATION]
+TOPICS = [TOPIC_INVENTORY, TOPIC_PRODUCT, TOPIC_DRUG, TOPIC_LOCATION, TOPIC_MOVEMENT]
 
 
 def run_consumer():
@@ -60,9 +61,9 @@ def run_consumer():
                 actions = transform(topic, value)
                 for action in actions:
                     if isinstance(action, IndexAction):
-                        index_document(os_client, action.doc_id, action.document)
+                        index_document(os_client, action.doc_id, action.document, action.index)
                     elif isinstance(action, DeleteAction):
-                        delete_document(os_client, action.doc_id)
+                        delete_document(os_client, action.doc_id, action.index)
 
                 consumer.commit(message=msg)
 

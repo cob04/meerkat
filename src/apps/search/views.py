@@ -13,6 +13,7 @@ from apps.search.contracts import (
     InventoryQuery,
     RecallQuery,
     StockQuery,
+    TurnoverQuery,
     ValueAtRiskQuery,
     ValueQuery,
 )
@@ -54,6 +55,14 @@ def catalog_composition(request):
     except SearchUnavailable:
         result = None
     return render(request, "search/composition.html", {"result": result})
+
+
+def turnover(request):
+    try:
+        result = services.turnover(TurnoverQuery())
+    except SearchUnavailable:
+        result = None
+    return render(request, "search/turnover.html", {"result": result})
 
 
 def catalog_search(request):

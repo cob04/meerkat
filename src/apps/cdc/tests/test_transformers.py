@@ -1,12 +1,15 @@
 from decimal import Decimal
 
 import pytest
+from django.contrib.auth import get_user_model
 
-from apps.catalog.models import Drug, InventoryItem, Location, Product
+from apps.catalog.models import Drug, InventoryItem, Location, Product, StockMovement
+from apps.cdc.opensearch_client import MOVEMENTS_INDEX
 from apps.cdc.transformers import (
     TOPIC_DRUG,
     TOPIC_INVENTORY,
     TOPIC_LOCATION,
+    TOPIC_MOVEMENT,
     TOPIC_PRODUCT,
     DeleteAction,
     IndexAction,
@@ -197,3 +200,38 @@ class TestUnknownTopic:
     def test_unknown_topic_returns_empty(self):
         actions = transform("unknown.topic", {"op": "c", "after": {}})
         assert actions == []
+
+
+@pytest.fixture
+def movement(item):
+    user = get_user_model().objects.create_user(username="cdc-tester")
+    return StockMovement.objects.create(
+        inventory_item=item,
+        movement_type=StockMovement.MovementType.DISPENSED,
+        quantity=5,
+        from_location=item.location,
+        performed_by=user,
+    )
+
+
+@pytest.mark.unit
+class TestStockMovementTransform:
+    def test_create_produces_movement_index_action(self, movement):
+        event = {"op": "c", "after": {"id": movement.pk, "deleted_at": None}, "before": None}
+        actions = transform(TOPIC_MOVEMENT, event)
+
+        assert len(actions) == 1
+        assert isinstance(actions[0], IndexAction)
+        assert actions[0].index == MOVEMENTS_INDEX
+        doc = actions[0].document
+        assert doc["movement_type"] == "dispensed"
+        assert doc["quantity"] == 5
+        assert doc["product_name"] == "Aspirin"
+
+    def test_delete_produces_movement_delete_action(self, movement):
+        event = {"op": "d", "after": None, "before": {"id": movement.pk}}
+        actions = transform(TOPIC_MOVEMENT, event)
+
+        assert len(actions) == 1
+        assert isinstance(actions[0], DeleteAction)
+        assert actions[0].index == MOVEMENTS_INDEX

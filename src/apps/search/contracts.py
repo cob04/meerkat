@@ -307,6 +307,50 @@ class CompositionResult:
     engine_took_ms: int
 
 
+TURNOVER_WINDOW_DAYS = 30
+DEAD_STOCK_WINDOW_DAYS = 90
+TOP_MOVERS_N = 10
+DEAD_STOCK_TOP_N = 20
+
+
+@dataclass
+class TurnoverQuery:
+    window_days: int = TURNOVER_WINDOW_DAYS
+    dead_window_days: int = DEAD_STOCK_WINDOW_DAYS
+
+
+@dataclass
+class ThroughputPoint:
+    period: str
+    dispensed: int
+    received: int
+
+
+@dataclass
+class MoverRow:
+    product: str
+    units: int
+
+
+@dataclass
+class DeadStockRow:
+    product: str
+    units: int
+    value: float
+
+
+@dataclass
+class TurnoverResult:
+    window_days: int
+    dispensed_units: int
+    received_units: int
+    dead_stock_value: float
+    throughput: list[ThroughputPoint]
+    top_movers: list[MoverRow]
+    dead_stock: list[DeadStockRow]
+    engine_took_ms: int
+
+
 RECALL_TOP_N = 100
 
 
