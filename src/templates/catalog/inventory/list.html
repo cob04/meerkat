@@ -19,9 +19,8 @@
       hx-swap="innerHTML"
       hx-push-url="true"
       class="flex flex-wrap items-end gap-3 mb-4">
-  <div>
-    <label class="block text-sm font-medium mb-1.5">Search</label>
-    {{ filter_form.search }}
+  <div class="flex-1 min-w-[200px]">
+    {% include "_searchbox.html" with name="search" value=request.GET.search placeholder="Item name or batch..." suggest_url="/inventory/?suggest=1" label="Search" %}
   </div>
   <div>
     <label class="block text-sm font-medium mb-1.5">Status</label>

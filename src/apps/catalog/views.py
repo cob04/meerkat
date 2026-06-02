@@ -23,6 +23,10 @@ def _render(request, full_template: str, partial_template: str, context: dict):
 
 
 def inventory_list(request):
+    if "suggest" in request.GET:
+        suggestions = services.suggest_inventory(request.GET.get("search"))
+        return render(request, "_suggestions.html", {"suggestions": suggestions})
+
     filter_form = InventoryFilterForm(request.GET)
     qs = InventoryItem.objects.select_related("product", "location")
 
@@ -223,6 +227,10 @@ def recall_batch_view(request):
 
 
 def location_list(request):
+    if "suggest" in request.GET:
+        suggestions = services.suggest_locations(request.GET.get("q"))
+        return render(request, "_suggestions.html", {"suggestions": suggestions})
+
     results = services.search_locations(
         q=(request.GET.get("q") or "").strip() or None,
         types=request.GET.getlist("type"),
@@ -237,6 +245,10 @@ def location_list(request):
 
 
 def product_list(request):
+    if "suggest" in request.GET:
+        suggestions = services.suggest_products(request.GET.get("q"))
+        return render(request, "_suggestions.html", {"suggestions": suggestions})
+
     results = services.search_products(
         q=(request.GET.get("q") or "").strip() or None,
         categories=request.GET.getlist("category"),

@@ -29,6 +29,28 @@ def search_inventory(query: InventoryQuery) -> InventoryResults:
     return search_query.parse_response(response, query)
 
 
+def suggest(q: str, limit: int = 8) -> list[str]:
+    """Distinct product/item names matching a partial query, for autocomplete."""
+    q = (q or "").strip()
+    if not q:
+        return []
+    try:
+        results = search_inventory(InventoryQuery(q=q, page=1, page_size=limit * 2, sort="_score"))
+    except client.SearchUnavailable:
+        return []
+
+    seen: set[str] = set()
+    suggestions: list[str] = []
+    for doc in results.items:
+        for name in (doc.product_name, doc.item_name):
+            if name and name not in seen:
+                seen.add(name)
+                suggestions.append(name)
+                if len(suggestions) >= limit:
+                    return suggestions
+    return suggestions
+
+
 def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:
     body = expiry_query.build_body(query)
     response = client.search(body)

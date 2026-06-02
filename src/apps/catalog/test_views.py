@@ -78,6 +78,13 @@ class TestInventoryListView:
         assert response.status_code == 200
         assert b"<!DOCTYPE" in response.content
 
+    def test_suggest_returns_partial(self, client, item):
+        body = client.get(
+            reverse("catalog:inventory-list"), {"suggest": "1", "search": "Aspirin"}
+        ).content.decode()
+        assert "<!DOCTYPE" not in body
+        assert "Aspirin" in body
+
     def test_filters_by_status(self, client, item):
         response = client.get(
             reverse("catalog:inventory-list"),
@@ -274,6 +281,13 @@ class TestLocationListView:
         assert "Pharmacy B" in body
         assert "Main Warehouse" not in body
 
+    def test_suggest_returns_partial(self, client, location):
+        body = client.get(
+            reverse("catalog:location-list"), {"suggest": "1", "q": "Main"}
+        ).content.decode()
+        assert "<!DOCTYPE" not in body
+        assert "Main Warehouse" in body
+
 
 @pytest.mark.integration
 class TestProductListView:
@@ -314,3 +328,11 @@ class TestProductListView:
         ).content.decode()
         assert "Amoxicillin" in body
         assert "Gloves" not in body
+
+    def test_suggest_returns_partial(self, client):
+        Product.objects.create(name="Amoxicillin", sku="A-1", unit_price=Decimal("1.00"))
+        body = client.get(
+            reverse("catalog:product-list"), {"suggest": "1", "q": "amox"}
+        ).content.decode()
+        assert "<!DOCTYPE" not in body
+        assert "Amoxicillin" in body

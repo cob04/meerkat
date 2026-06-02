@@ -21,6 +21,10 @@ def _render(request, full_template: str, partial_template: str, context: dict):
 
 
 def catalog_search(request):
+    if "suggest" in request.GET:
+        suggestions = services.suggest(request.GET.get("q"))
+        return render(request, "_suggestions.html", {"suggestions": suggestions})
+
     query = InventoryQuery(
         q=request.GET.get("q") or None,
         page=_int_param(request.GET.get("page"), default=1, minimum=1),

@@ -1,0 +1,33 @@
+{% comment %}
+Themed typeahead search box. Params via {% include with %}:
+  name        input name (e.g. "q" or "search")
+  value       current value
+  placeholder placeholder text
+  suggest_url URL that returns _suggestions.html (must include ?suggest=1)
+  label       optional field label
+{% endcomment %}
+<div class="relative"
+     x-data="{ open: false, pick(v) { const i = $refs.input; i.value = v; this.open = false; if (i.form) i.form.requestSubmit(); } }"
+     @click.outside="open = false"
+     @keydown.escape="open = false"
+     @htmx:after-swap="open = $refs.sugg.innerHTML.trim().length > 0">
+  {% if label %}<label class="block text-sm font-medium mb-1.5">{{ label }}</label>{% endif %}
+  <input type="text"
+         name="{{ name }}"
+         value="{{ value|default:'' }}"
+         placeholder="{{ placeholder }}"
+         autocomplete="off"
+         x-ref="input"
+         hx-get="{{ suggest_url }}"
+         hx-target="#{{ name }}-suggest"
+         hx-select="unset"
+         hx-swap="innerHTML"
+         hx-trigger="keyup changed delay:200ms"
+         @focus="open = $refs.sugg.innerHTML.trim().length > 0"
+         @keydown.arrow-down.prevent="$refs.sugg.querySelector('button') && $refs.sugg.querySelector('button').focus()"
+         class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+  <div id="{{ name }}-suggest"
+       x-ref="sugg"
+       x-show="open"
+       class="absolute z-20 mt-1 w-full max-h-64 overflow-auto rounded-md border border-border bg-card shadow-md"></div>
+</div>
