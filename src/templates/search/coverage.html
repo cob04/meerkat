@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Network Coverage - Meerkat{% endblock %}
+{% block page_title %}Network Coverage{% endblock %}
+
+{% block content %}
+{% if result %}
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="text-xs font-medium text-muted-foreground">Products in stock</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ result.products_in_stock|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">distinct products with available stock</div>
+  </div>
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-warning">
+    <div class="text-xs font-medium text-muted-foreground">Single-source products</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ result.single_source_count|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">stocked at only one location</div>
+  </div>
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="text-xs font-medium text-muted-foreground">Well covered</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ result.well_covered_count|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">available at 3 or more sites</div>
+  </div>
+</section>
+
+<div class="rounded-xl border border-border bg-card shadow-sm mb-8">
+  <div class="px-5 py-3 border-b border-border">
+    <h2 class="text-sm font-semibold">Coverage distribution</h2>
+  </div>
+  <div class="p-5 space-y-2.5">
+    {% for band in result.coverage_bands %}
+    <div class="flex items-center gap-3">
+      <span class="w-16 text-xs text-muted-foreground shrink-0">{{ band.label }}</span>
+      <div class="flex-1 h-5 rounded bg-surface overflow-hidden">
+        <div class="h-full rounded {% if band.label == '1 site' %}bg-warning/70{% else %}bg-brand/60{% endif %}"
+             style="width: {% widthratio band.products result.products_in_stock 100 %}%"></div>
+      </div>
+      <span class="w-16 text-right text-xs tabular-nums shrink-0">{{ band.products|intcomma }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="rounded-xl border border-border bg-card shadow-sm">
+  <div class="px-5 py-3 border-b border-border flex items-center justify-between">
+    <h2 class="text-sm font-semibold">Single-source products</h2>
+    <span class="text-xs text-subtle">consolidation / supply risk</span>
+  </div>
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-border bg-muted/50">
+        <th class="h-9 px-4 text-left font-medium text-muted-foreground">Product</th>
+        <th class="h-9 px-4 text-left font-medium text-muted-foreground">Only at</th>
+        <th class="h-9 px-4 text-right font-medium text-muted-foreground">Units</th>
+        <th class="h-9 px-4 text-right font-medium text-muted-foreground">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in result.single_source %}
+      <tr class="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+        <td class="px-4 py-2 font-medium">{{ row.product }}</td>
+        <td class="px-4 py-2 text-muted-foreground">{{ row.site }}</td>
+        <td class="px-4 py-2 text-right tabular-nums">{{ row.units|intcomma }}</td>
+        <td class="px-4 py-2 text-right tabular-nums">${{ row.value|floatformat:0|intcomma }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="px-4 py-8 text-center text-muted-foreground">No single-source products.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="rounded-lg border border-border bg-card px-5 py-10 text-center text-sm text-muted-foreground">
+  Network coverage is temporarily unavailable.
+</div>
+{% endif %}
+{% endblock %}

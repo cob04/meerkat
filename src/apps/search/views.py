@@ -7,6 +7,7 @@ from apps.search.contracts import (
     DEFAULT_LOW_STOCK_THRESHOLD,
     DEFAULT_PAGE_SIZE,
     AvailabilityQuery,
+    CoverageQuery,
     ExpiryQuery,
     InventoryQuery,
     RecallQuery,
@@ -36,6 +37,14 @@ def value_at_risk(request):
     except SearchUnavailable:
         result = None
     return render(request, "search/value_at_risk.html", {"result": result})
+
+
+def network_coverage(request):
+    try:
+        result = services.network_coverage(CoverageQuery())
+    except SearchUnavailable:
+        result = None
+    return render(request, "search/coverage.html", {"result": result})
 
 
 def catalog_search(request):
