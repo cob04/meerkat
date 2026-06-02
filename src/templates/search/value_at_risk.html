@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Value at Risk - Meerkat{% endblock %}
+{% block page_title %}Value at Risk{% endblock %}
+
+{% block content %}
+{% if result %}
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-danger">
+    <div class="text-xs font-medium text-muted-foreground">Already expired</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">${{ result.expired_value|floatformat:0|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">value of expired stock on hand</div>
+  </div>
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-warning">
+    <div class="text-xs font-medium text-muted-foreground">Expiring · 30 days</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">${{ result.expiring_30d_value|floatformat:0|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">sellable stock at urgent risk</div>
+  </div>
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-warning">
+    <div class="text-xs font-medium text-muted-foreground">Expiring · 90 days</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">${{ result.expiring_90d_value|floatformat:0|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">sellable stock at risk</div>
+  </div>
+</section>
+
+<div class="rounded-xl border border-border bg-card shadow-sm mb-8">
+  <div class="px-5 py-3 border-b border-border flex items-center justify-between">
+    <h2 class="text-sm font-semibold">Write-off forecast</h2>
+    <span class="text-xs text-subtle">value expiring per month</span>
+  </div>
+  <div class="p-5 space-y-2.5">
+    {% for point in result.forecast %}
+    <div class="flex items-center gap-3">
+      <span class="w-16 text-xs text-muted-foreground tabular-nums shrink-0">{{ point.month }}</span>
+      <div class="flex-1 h-5 rounded bg-surface overflow-hidden">
+        <div class="h-full rounded bg-warning/70" style="width: {{ point.pct }}%"></div>
+      </div>
+      <span class="w-24 text-right text-xs tabular-nums shrink-0">${{ point.value|floatformat:0|intcomma }}</span>
+    </div>
+    {% empty %}
+    <p class="text-sm text-muted-foreground text-center py-4">No upcoming expiries in the forecast window.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  {% include "search/_value_table.html" with title="At risk by category" rows=result.by_category label="Category" %}
+  {% include "search/_value_table.html" with title="At risk by location" rows=result.by_location label="Location" %}
+</div>
+{% else %}
+<div class="rounded-lg border border-border bg-card px-5 py-10 text-center text-sm text-muted-foreground">
+  Value at risk is temporarily unavailable.
+</div>
+{% endif %}
+{% endblock %}

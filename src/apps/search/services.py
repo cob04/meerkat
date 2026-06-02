@@ -13,6 +13,8 @@ from apps.search.contracts import (
     RecallImpact,
     RecallQuery,
     StockQuery,
+    ValueAtRiskQuery,
+    ValueAtRiskResult,
     ValueQuery,
     ValueResult,
 )
@@ -22,6 +24,7 @@ from apps.search.queries import recall as recall_query
 from apps.search.queries import search as search_query
 from apps.search.queries import stock as stock_query
 from apps.search.queries import value as value_query
+from apps.search.queries import value_at_risk as value_at_risk_query
 
 EARTH_RADIUS_KM = 6371.0088
 
@@ -58,6 +61,12 @@ def inventory_value(query: ValueQuery) -> ValueResult:
     body = value_query.build_body(query)
     response = client.search(body)
     return value_query.parse_response(response, query)
+
+
+def value_at_risk(query: ValueAtRiskQuery) -> ValueAtRiskResult:
+    body = value_at_risk_query.build_body(query)
+    response = client.search(body)
+    return value_at_risk_query.parse_response(response, query)
 
 
 def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:

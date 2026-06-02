@@ -234,6 +234,29 @@ class ValueResult:
     engine_took_ms: int
 
 
+@dataclass
+class ValueAtRiskQuery:
+    forecast_months: int = 6
+
+
+@dataclass
+class ForecastPoint:
+    month: str
+    value: float
+    pct: float
+
+
+@dataclass
+class ValueAtRiskResult:
+    expired_value: float
+    expiring_30d_value: float
+    expiring_90d_value: float
+    forecast: list[ForecastPoint]
+    by_category: list[ValueBucket]
+    by_location: list[ValueBucket]
+    engine_took_ms: int
+
+
 RECALL_TOP_N = 100
 
 
