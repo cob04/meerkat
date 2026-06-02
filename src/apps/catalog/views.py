@@ -223,10 +223,31 @@ def recall_batch_view(request):
 
 
 def location_list(request):
-    locations = Location.objects.all()
-    return render(request, "catalog/locations/list.html", {"locations": locations})
+    results = services.search_locations(
+        q=(request.GET.get("q") or "").strip() or None,
+        types=request.GET.getlist("type"),
+        gps=request.GET.getlist("gps"),
+    )
+    return _render(
+        request,
+        "catalog/locations/list.html",
+        "catalog/locations/_results.html",
+        {"results": results, "q": request.GET.get("q", "")},
+    )
 
 
 def product_list(request):
-    products = Product.objects.select_related("drug").all()
-    return render(request, "catalog/products/list.html", {"products": products})
+    results = services.search_products(
+        q=(request.GET.get("q") or "").strip() or None,
+        categories=request.GET.getlist("category"),
+        types=request.GET.getlist("type"),
+        dosage_forms=request.GET.getlist("dosage_form"),
+        prescription=request.GET.getlist("prescription"),
+        active=request.GET.getlist("active"),
+    )
+    return _render(
+        request,
+        "catalog/products/list.html",
+        "catalog/products/_results.html",
+        {"results": results, "q": request.GET.get("q", "")},
+    )
