@@ -11,6 +11,7 @@ from apps.search.contracts import (
     InventoryQuery,
     RecallQuery,
     StockQuery,
+    ValueAtRiskQuery,
     ValueQuery,
 )
 
@@ -27,6 +28,14 @@ def inventory_value(request):
     except SearchUnavailable:
         result = None
     return render(request, "search/value.html", {"result": result})
+
+
+def value_at_risk(request):
+    try:
+        result = services.value_at_risk(ValueAtRiskQuery())
+    except SearchUnavailable:
+        result = None
+    return render(request, "search/value_at_risk.html", {"result": result})
 
 
 def catalog_search(request):

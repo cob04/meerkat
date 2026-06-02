@@ -145,6 +145,10 @@
           <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18"/><path d="M7 16v-5M12 16V8M17 16v-3"/></svg>
           <span x-show="sidebarOpen" x-cloak>Inventory Value</span>
         </a>
+        <a href="{% url 'search:value-at-risk' %}" title="Value at Risk" :class="{ 'justify-center': !sidebarOpen }" class="{{ base }} {% if current == 'value-at-risk' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2v6m0 0l3-3m-3 3L9 5M5 13a7 7 0 1014 0c0-3-2-5-2-5"/><path d="M12 13v4"/></svg>
+          <span x-show="sidebarOpen" x-cloak>Value at Risk</span>
+        </a>
 
         <div class="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle" x-show="sidebarOpen" x-cloak>Operations</div>
         <div class="mx-auto my-2 h-px w-6 bg-border" x-show="!sidebarOpen" x-cloak></div>
