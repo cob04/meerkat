@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.search import services
-from apps.search.contracts import InventoryQuery
+from apps.search import client, services
+from apps.search.contracts import InventoryDoc, InventoryQuery, InventoryResults
 
 
 @pytest.mark.unit
@@ -38,3 +38,43 @@ class TestSearchInventory:
         assert results.total == 1
         assert results.items[0].id == 42
         assert results.engine_took_ms == 5
+
+
+def _doc(item_name, product_name):
+    return InventoryDoc(
+        id=1,
+        item_name=item_name,
+        product_name=product_name,
+        batch_number="B",
+        location_name="L",
+        quantity=1,
+        status="available",
+        expiry_date=None,
+    )
+
+
+@pytest.mark.unit
+class TestSuggest:
+    def test_dedupes_product_and_item_names(self):
+        results = InventoryResults(
+            items=[_doc("Panadol 500", "Panadol"), _doc("Panadol 250", "Panadol")],
+            total=2,
+            page=1,
+            page_size=16,
+            engine_took_ms=1,
+            facets=None,
+        )
+        with patch("apps.search.services.search_inventory", return_value=results):
+            assert services.suggest("pan") == ["Panadol", "Panadol 500", "Panadol 250"]
+
+    def test_blank_query_skips_search(self):
+        with patch("apps.search.services.search_inventory") as mock:
+            assert services.suggest("  ") == []
+        assert mock.call_count == 0
+
+    def test_unavailable_returns_empty(self):
+        with patch(
+            "apps.search.services.search_inventory",
+            side_effect=client.SearchUnavailable("down"),
+        ):
+            assert services.suggest("pan") == []

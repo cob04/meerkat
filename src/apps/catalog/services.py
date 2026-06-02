@@ -477,3 +477,35 @@ def search_locations(q=None, types=None, gps=None) -> SearchResults:
         ),
     ]
     return SearchResults(items=ordered, total=len(ordered), facets=facets)
+
+
+def _suggest(queryset, field, q, limit=8):
+    q = (q or "").strip()
+    if not q:
+        return []
+    values = queryset.values_list(field, flat=True).distinct().order_by(field)[: limit * 4]
+    return list(dict.fromkeys(values))[:limit]
+
+
+def suggest_inventory(q, limit=8) -> list[str]:
+    """Distinct inventory item names matching a partial query, for autocomplete."""
+    if not (q or "").strip():
+        return []
+    base = InventoryItem.objects.filter(Q(item_name__icontains=q) | Q(product__name__icontains=q))
+    return _suggest(base, "item_name", q, limit)
+
+
+def suggest_products(q, limit=8) -> list[str]:
+    """Distinct product names matching a partial query, for autocomplete."""
+    if not (q or "").strip():
+        return []
+    base = Product.objects.filter(Q(name__icontains=q) | Q(sku__icontains=q))
+    return _suggest(base, "name", q, limit)
+
+
+def suggest_locations(q, limit=8) -> list[str]:
+    """Distinct location names matching a partial query, for autocomplete."""
+    if not (q or "").strip():
+        return []
+    base = Location.objects.filter(Q(name__icontains=q) | Q(address__icontains=q))
+    return _suggest(base, "name", q, limit)

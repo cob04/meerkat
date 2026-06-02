@@ -67,6 +67,21 @@ class TestCatalogSearchView:
         assert b"<!DOCTYPE html" in response.content
         assert b"Drug name, brand, batch" in response.content
 
+    def test_suggest_returns_name_list(self, client):
+        with patch("apps.search.views.services.suggest", return_value=["Panadol", "Paracetamol"]):
+            response = client.get(reverse("search:catalog-search"), {"suggest": "1", "q": "pa"})
+
+        assert response.status_code == 200
+        assert b"<!DOCTYPE html" not in response.content
+        assert b"Panadol" in response.content
+
+    def test_suggest_empty_renders_nothing(self, client):
+        with patch("apps.search.views.services.suggest", return_value=[]):
+            response = client.get(reverse("search:catalog-search"), {"suggest": "1", "q": "zzz"})
+
+        assert response.status_code == 200
+        assert b"<button" not in response.content
+
     def test_renders_unavailable_when_search_down(self, client):
         with patch(
             "apps.search.views.services.search_inventory",

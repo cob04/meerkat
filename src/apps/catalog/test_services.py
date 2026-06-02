@@ -13,6 +13,9 @@ from apps.catalog.services import (
     return_stock,
     search_locations,
     search_products,
+    suggest_inventory,
+    suggest_locations,
+    suggest_products,
     transfer_stock,
 )
 
@@ -417,3 +420,42 @@ class TestSearchLocations:
         results = search_locations()
         assert _facet_counts(results, "type") == {"pharmacy": 1, "warehouse": 1, "ward": 1}
         assert _facet_counts(results, "gps") == {"yes": 2, "no": 1}
+
+
+@pytest.mark.integration
+@pytest.mark.django_db
+class TestSuggest:
+    def test_products_match_and_empty(self):
+        _make_product("Amoxicillin", "DRUG-1", "antibiotic")
+        _make_product("Amoxiclav", "DRUG-2", "antibiotic")
+        _make_product("Paracetamol", "DRUG-3", "analgesic")
+
+        assert set(suggest_products("amox")) == {"Amoxicillin", "Amoxiclav"}
+        assert suggest_products("PARA") == ["Paracetamol"]
+        assert suggest_products("") == []
+
+    def test_products_distinct_and_capped(self):
+        for i in range(12):
+            _make_product(f"Vitamin {i:02d}", f"V-{i}", "supplies")
+        assert len(suggest_products("vitamin")) == 8
+
+    def test_locations_match_name_and_address(self):
+        Location.objects.create(name="Karen Pharmacy", location_type=Location.LocationType.PHARMACY)
+        Location.objects.create(
+            name="Depot", location_type=Location.LocationType.WAREHOUSE, address="Karen Road"
+        )
+        assert set(suggest_locations("karen")) == {"Karen Pharmacy", "Depot"}
+
+    def test_inventory_distinct_names(self):
+        loc = Location.objects.create(name="L", location_type=Location.LocationType.WARD)
+        for batch in ("B1", "B2"):
+            InventoryItem.objects.create(
+                item_name="Amoxicillin 500",
+                location=loc,
+                batch_number=batch,
+                quantity=1,
+                expiry_date="2030-01-01",
+                unit_cost=Decimal("1.00"),
+            )
+        assert suggest_inventory("amox") == ["Amoxicillin 500"]
+        assert suggest_inventory("") == []

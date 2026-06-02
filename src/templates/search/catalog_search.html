@@ -12,13 +12,7 @@
       hx-trigger="submit, keyup changed delay:300ms from:input[name=q], change">
   <div class="flex items-end gap-3 mb-4">
     <div class="flex-1">
-      <label class="block text-sm font-medium mb-1.5">Search inventory</label>
-      <input type="text"
-             name="q"
-             value="{{ query.q|default:'' }}"
-             placeholder="Drug name, brand, batch..."
-             autocomplete="off"
-             class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+      {% include "_searchbox.html" with name="q" value=query.q placeholder="Drug name, brand, batch..." suggest_url="/search/?suggest=1" label="Search inventory" %}
     </div>
     <button type="submit"
             class="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">

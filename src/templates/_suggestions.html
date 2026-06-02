@@ -1,0 +1,9 @@
+{% for s in suggestions %}
+<button type="button"
+        @click="pick('{{ s|escapejs }}')"
+        @keydown.arrow-down.prevent="$el.nextElementSibling && $el.nextElementSibling.focus()"
+        @keydown.arrow-up.prevent="$el.previousElementSibling ? $el.previousElementSibling.focus() : $refs.input.focus()"
+        class="block w-full text-left px-3 py-1.5 text-sm hover:bg-accent focus:bg-accent focus:outline-none">
+  {{ s }}
+</button>
+{% endfor %}
