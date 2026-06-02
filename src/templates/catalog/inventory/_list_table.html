@@ -67,6 +67,8 @@
   <a href="?page={{ page.previous_page_number }}"
      hx-get="{% url 'catalog:inventory-list' %}?page={{ page.previous_page_number }}"
      hx-target="#inventory-table"
+     hx-select="unset"
+     hx-swap="innerHTML"
      hx-push-url="true"
      class="inline-flex h-8 items-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">
     Previous
@@ -79,6 +81,8 @@
   <a href="?page={{ page.next_page_number }}"
      hx-get="{% url 'catalog:inventory-list' %}?page={{ page.next_page_number }}"
      hx-target="#inventory-table"
+     hx-select="unset"
+     hx-swap="innerHTML"
      hx-push-url="true"
      class="inline-flex h-8 items-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">
     Next

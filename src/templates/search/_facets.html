@@ -60,6 +60,8 @@
   <a href="?q={{ query.q|default:'' }}"
      hx-get="{% url 'search:catalog-search' %}?q={{ query.q|default:'' }}"
      hx-target="#search-results"
+     hx-select="unset"
+     hx-swap="innerHTML"
      hx-push-url="true"
      class="inline-flex items-center text-xs text-muted-foreground hover:text-foreground">
     Clear filters

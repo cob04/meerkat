@@ -17,7 +17,8 @@ from apps.catalog.models import InventoryItem, Location, Product
 
 
 def _render(request, full_template: str, partial_template: str, context: dict):
-    template = partial_template if request.headers.get("HX-Request") else full_template
+    is_partial = request.headers.get("HX-Request") and not request.headers.get("HX-Boosted")
+    template = partial_template if is_partial else full_template
     return render(request, template, context)
 
 

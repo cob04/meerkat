@@ -69,6 +69,15 @@ class TestInventoryListView:
         assert b"<table" in response.content
         assert b"<!DOCTYPE" not in response.content
 
+    def test_boosted_request_returns_full_page(self, client):
+        response = client.get(
+            reverse("catalog:inventory-list"),
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_BOOSTED="true",
+        )
+        assert response.status_code == 200
+        assert b"<!DOCTYPE" in response.content
+
     def test_filters_by_status(self, client, item):
         response = client.get(
             reverse("catalog:inventory-list"),

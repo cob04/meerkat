@@ -59,6 +59,8 @@
       <a href="?{{ base_qs }}&page={{ results.page|add:'-1' }}"
          hx-get="{% url 'search:catalog-search' %}?{{ base_qs }}&page={{ results.page|add:'-1' }}"
          hx-target="#search-results"
+         hx-select="unset"
+         hx-swap="innerHTML"
          hx-push-url="true"
          class="inline-flex h-8 items-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">
         Previous
@@ -71,6 +73,8 @@
       <a href="?{{ base_qs }}&page={{ results.page|add:'1' }}"
          hx-get="{% url 'search:catalog-search' %}?{{ base_qs }}&page={{ results.page|add:'1' }}"
          hx-target="#search-results"
+         hx-select="unset"
+         hx-swap="innerHTML"
          hx-push-url="true"
          class="inline-flex h-8 items-center rounded-md border border-input px-3 text-sm hover:bg-accent transition-colors">
         Next
