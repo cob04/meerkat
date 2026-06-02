@@ -5,6 +5,8 @@ from apps.search import client
 from apps.search.contracts import (
     AvailabilityQuery,
     AvailabilityResult,
+    CompositionQuery,
+    CompositionResult,
     CoverageQuery,
     CoverageResult,
     ExpiryQuery,
@@ -21,6 +23,7 @@ from apps.search.contracts import (
     ValueResult,
 )
 from apps.search.queries import availability as availability_query
+from apps.search.queries import composition as composition_query
 from apps.search.queries import coverage as coverage_query
 from apps.search.queries import expiry as expiry_query
 from apps.search.queries import recall as recall_query
@@ -76,6 +79,12 @@ def network_coverage(query: CoverageQuery) -> CoverageResult:
     body = coverage_query.build_body(query)
     response = client.search(body)
     return coverage_query.parse_response(response, query)
+
+
+def catalog_composition(query: CompositionQuery) -> CompositionResult:
+    body = composition_query.build_body(query)
+    response = client.search(body)
+    return composition_query.parse_response(response, query)
 
 
 def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:

@@ -18,6 +18,7 @@ INVENTORY_MAPPING = {
             "drug_inn_name": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
             "drug_brand_name": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},
             "drug_atc_code": {"type": "keyword"},
+            "drug_atc_class": {"type": "keyword"},
             "drug_dosage_form": {"type": "keyword"},
             "drug_strength": {"type": "keyword"},
             "drug_manufacturer": {"type": "text", "fields": {"keyword": {"type": "keyword"}}},

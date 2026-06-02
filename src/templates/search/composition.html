@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Catalog Composition - Meerkat{% endblock %}
+{% block page_title %}Catalog Composition{% endblock %}
+
+{% block content %}
+{% if result %}
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="text-xs font-medium text-muted-foreground">Catalog value</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">${{ result.total_value|floatformat:0|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">{{ result.by_manufacturer|length }} manufacturer{{ result.by_manufacturer|length|pluralize }} represented</div>
+  </div>
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="text-xs font-medium text-muted-foreground">Top supplier</div>
+    <div class="mt-2 text-2xl font-semibold tracking-tight truncate">{{ result.top_manufacturer }}</div>
+    <div class="mt-1 text-xs text-subtle">{{ result.supplier_concentration }}% of stock value</div>
+  </div>
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-warning">
+    <div class="text-xs font-medium text-muted-foreground">Supplier concentration</div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ result.supplier_concentration }}%</div>
+    <div class="mt-1 text-xs text-subtle">share held by the top supplier</div>
+  </div>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  {% include "search/_value_table.html" with title="By manufacturer" rows=result.by_manufacturer label="Manufacturer" %}
+  {% include "search/_value_table.html" with title="By ATC class" rows=result.by_atc_class label="ATC class" %}
+  {% include "search/_value_table.html" with title="By dosage form" rows=result.by_dosage_form label="Dosage form" %}
+  {% include "search/_value_table.html" with title="By prescription" rows=result.by_prescription label="Type" %}
+</div>
+{% else %}
+<div class="rounded-lg border border-border bg-card px-5 py-10 text-center text-sm text-muted-foreground">
+  Catalog composition is temporarily unavailable.
+</div>
+{% endif %}
+{% endblock %}

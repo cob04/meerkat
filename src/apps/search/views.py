@@ -7,6 +7,7 @@ from apps.search.contracts import (
     DEFAULT_LOW_STOCK_THRESHOLD,
     DEFAULT_PAGE_SIZE,
     AvailabilityQuery,
+    CompositionQuery,
     CoverageQuery,
     ExpiryQuery,
     InventoryQuery,
@@ -45,6 +46,14 @@ def network_coverage(request):
     except SearchUnavailable:
         result = None
     return render(request, "search/coverage.html", {"result": result})
+
+
+def catalog_composition(request):
+    try:
+        result = services.catalog_composition(CompositionQuery())
+    except SearchUnavailable:
+        result = None
+    return render(request, "search/composition.html", {"result": result})
 
 
 def catalog_search(request):
