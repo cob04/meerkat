@@ -90,6 +90,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "assets"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 RULES_DIR = BASE_DIR / "rules"
 
