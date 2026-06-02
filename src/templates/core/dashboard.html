@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Meerkat{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+{% with k=snapshot.kpis %}
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Total items</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-brand-soft text-brand">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ k.total_items }}</div>
+    <div class="mt-1 text-xs text-subtle">across {{ k.location_count }} location{{ k.location_count|pluralize }}</div>
+  </div>
+
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-warning">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Low stock</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-warning-soft text-warning">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l6 6 4-4 8 8M21 17h-5M21 17v-5"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{% if k.low_stock is None %}—{% else %}{{ k.low_stock }}{% endif %}</div>
+    <div class="mt-1 text-xs text-subtle">below {{ low_stock_threshold }} units</div>
+  </div>
+
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-warning">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Expiring · 30 days</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-warning-soft text-warning">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{% if k.expiring_30d is None %}—{% else %}{{ k.expiring_30d }}{% endif %}</div>
+    <div class="mt-1 text-xs text-subtle">batches within 30 days</div>
+  </div>
+
+  <div class="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-danger">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Active recalls</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-danger-soft text-danger">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10.3 4.3L2.6 18a2 2 0 001.7 3h15.4a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ k.active_recalls }}</div>
+    <div class="mt-1 text-xs text-subtle">{{ k.recalled_units }} unit{{ k.recalled_units|pluralize }} · {{ k.recalled_locations }} location{{ k.recalled_locations|pluralize }}</div>
+  </div>
+</section>
+{% endwith %}
+
+<div class="flex items-baseline justify-between mb-3">
+  <h2 class="text-sm font-semibold tracking-tight">Answer the five priority questions</h2>
+  <span class="text-xs text-subtle">The discovery features, one click away</span>
+</div>
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
+  {% for q in questions %}
+  <a href="{{ q.url }}" class="group flex flex-col gap-1.5 rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-brand">
+    <span class="text-[10px] font-bold tracking-widest text-subtle">{{ q.num }}</span>
+    <span class="text-[13px] font-medium leading-snug">{{ q.text }}</span>
+    <span class="mt-auto pt-1 text-xs font-medium text-brand">{{ q.cta }} →</span>
+  </a>
+  {% endfor %}
+</section>
+
+<section class="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 mb-8">
+  <div class="rounded-xl border border-border bg-card shadow-sm">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+      <h2 class="text-sm font-semibold">Needs attention</h2>
+      <a href="{% url 'search:low-stock' %}" class="text-xs font-medium text-brand hover:underline">View all</a>
+    </div>
+    <div>
+      {% for row in snapshot.attention %}
+      <div class="grid grid-cols-[10px_1fr_auto_auto] items-center gap-3 px-5 py-2.5 border-b border-border last:border-0 hover:bg-surface transition-colors">
+        <span class="h-2 w-2 rounded-full {% if row.severity == 'danger' %}bg-danger{% else %}bg-warning{% endif %}"></span>
+        <div class="min-w-0">
+          <div class="text-[13px] font-medium truncate">{{ row.name }} · {{ row.batch }}</div>
+          <div class="text-xs text-subtle truncate">{{ row.reason }} · {{ row.location }}</div>
+        </div>
+        <div class="text-[13px] font-semibold tabular-nums">{{ row.quantity }} <span class="font-normal text-subtle">units</span></div>
+        <a href="{{ row.action_url }}" class="text-xs font-medium text-brand hover:underline whitespace-nowrap">{{ row.action_label }} →</a>
+      </div>
+      {% empty %}
+      <div class="px-5 py-10 text-center text-sm text-muted-foreground">Nothing needs attention right now.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-border bg-card shadow-sm">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+      <h2 class="text-sm font-semibold">Recent activity</h2>
+      <span class="text-xs text-subtle">Latest stock movements</span>
+    </div>
+    <div>
+      {% for row in snapshot.activity %}
+      <div class="grid grid-cols-[24px_1fr_auto] items-center gap-3 px-5 py-2.5 border-b border-border last:border-0 hover:bg-surface transition-colors">
+        <span class="grid h-6 w-6 place-items-center rounded-md
+          {% if row.kind == 'dispense' %}bg-brand-soft text-brand
+          {% elif row.kind == 'receive' %}bg-success-soft text-success
+          {% elif row.kind == 'transfer' %}bg-info-soft text-info
+          {% elif row.kind == 'return' %}bg-success-soft text-success
+          {% else %}bg-warning-soft text-warning{% endif %}">
+          {% if row.kind == 'dispense' %}<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>
+          {% elif row.kind == 'receive' %}<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          {% elif row.kind == 'transfer' %}<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l-4-4 4-4M3 13h12M17 7l4 4-4 4M21 11H9"/></svg>
+          {% elif row.kind == 'return' %}<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          {% else %}<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>{% endif %}
+        </span>
+        <div class="min-w-0">
+          <div class="text-[13px] font-medium truncate">{{ row.summary }}</div>
+          <div class="text-xs text-subtle truncate">{{ row.where }}</div>
+        </div>
+        <div class="text-xs text-subtle tabular-nums">{{ row.when|date:"M j, H:i" }}</div>
+      </div>
+      {% empty %}
+      <div class="px-5 py-10 text-center text-sm text-muted-foreground">No recent activity.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="flex items-baseline justify-between mb-3">
+  <h2 class="text-sm font-semibold tracking-tight">Pipeline</h2>
+  <a href="http://localhost:8088" target="_blank" rel="noopener" class="text-xs font-medium text-brand hover:underline">Open Dozzle →</a>
+</div>
+<div class="flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
+  <span class="h-2 w-2 rounded-full {% if snapshot.search_ok %}bg-success{% else %}bg-danger{% endif %}"></span>
+  <div>
+    <div class="text-[13px] font-medium {% if snapshot.search_ok %}text-success{% else %}text-danger{% endif %}">
+      {% if snapshot.search_ok %}Search index responding{% else %}Search index unavailable{% endif %}
+    </div>
+    <div class="text-xs text-subtle">Postgres → Debezium → OpenSearch</div>
+  </div>
+  <a href="http://localhost:8088" target="_blank" rel="noopener" class="ml-auto text-xs font-medium text-brand hover:underline">Live logs →</a>
+</div>
+{% endblock %}

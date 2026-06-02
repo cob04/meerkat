@@ -2,10 +2,14 @@ import random
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from apps.catalog.models import Drug, InventoryItem, Location, Product
+from apps.catalog.models import Drug, InventoryItem, Location, Product, StockMovement
+from apps.core.models import AuditEvent
+
+User = get_user_model()
 
 LOCATIONS = [
     {
@@ -188,17 +192,21 @@ class Command(BaseCommand):
         items = self._seed_inventory(
             rng, locations, drug_products + other_products, options["items"]
         )
+        movements = self._seed_activity(rng, locations, items)
 
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seeded {len(locations)} locations, "
                 f"{len(drug_products)} drugs, "
                 f"{len(other_products)} other products, "
-                f"{len(items)} inventory items."
+                f"{len(items)} inventory items, "
+                f"{movements} stock movements."
             )
         )
 
     def _reset(self):
+        StockMovement.all_objects.all().delete()
+        AuditEvent.objects.all().delete()
         InventoryItem.all_objects.all().delete()
         Drug.all_objects.all().delete()
         Product.all_objects.all().delete()
@@ -314,3 +322,70 @@ class Command(BaseCommand):
                 )
             )
         return items
+
+    def _demo_user(self) -> User:
+        user, _ = User.objects.get_or_create(
+            username="demo",
+            defaults={"first_name": "Demo", "last_name": "Pharmacist"},
+        )
+        return user
+
+    def _seed_activity(
+        self,
+        rng: random.Random,
+        locations: list[Location],
+        items: list[InventoryItem],
+        count: int = 50,
+    ) -> int:
+        if not items:
+            return 0
+
+        user = self._demo_user()
+        types = [
+            StockMovement.MovementType.RECEIVED,
+            StockMovement.MovementType.DISPENSED,
+            StockMovement.MovementType.TRANSFERRED,
+            StockMovement.MovementType.ADJUSTED,
+            StockMovement.MovementType.RETURNED,
+        ]
+        actions = {
+            StockMovement.MovementType.RECEIVED: "receive",
+            StockMovement.MovementType.DISPENSED: "dispense",
+            StockMovement.MovementType.TRANSFERRED: "transfer",
+            StockMovement.MovementType.ADJUSTED: "adjust",
+            StockMovement.MovementType.RETURNED: "return",
+        }
+
+        created = 0
+        for _ in range(count):
+            item = rng.choice(items)
+            movement_type = rng.choice(types)
+            from_location = None
+            to_location = None
+            if movement_type == StockMovement.MovementType.ADJUSTED:
+                quantity = rng.choice([-5, -2, -1, 2, 5])
+            else:
+                quantity = rng.randint(1, 30)
+            if movement_type == StockMovement.MovementType.TRANSFERRED:
+                from_location = item.location
+                to_location = rng.choice([loc for loc in locations if loc != item.location])
+            elif movement_type == StockMovement.MovementType.RECEIVED:
+                to_location = item.location
+
+            StockMovement.objects.create(
+                inventory_item=item,
+                movement_type=movement_type,
+                quantity=quantity,
+                from_location=from_location,
+                to_location=to_location,
+                performed_by=user,
+            )
+            AuditEvent(
+                user=user,
+                action=actions[movement_type],
+                model_name="InventoryItem",
+                record_id=item.pk,
+                description=f"{movement_type.label} {quantity}x {item.item_name}",
+            ).save()
+            created += 1
+        return created
