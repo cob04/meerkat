@@ -106,6 +106,7 @@ def _build_inventory_doc(item_id: int) -> IndexAction | None:
         "quantity": item.quantity,
         "expiry_date": item.expiry_date.isoformat() if item.expiry_date else None,
         "unit_cost": float(item.unit_cost),
+        "line_value": float(item.unit_cost) * item.quantity,
         "status": item.status,
         "location_id": item.location_id,
         "location_name": item.location.name,

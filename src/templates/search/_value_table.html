@@ -1,0 +1,26 @@
+{% load humanize %}
+<div class="rounded-xl border border-border bg-card shadow-sm">
+  <div class="px-5 py-3 border-b border-border">
+    <h2 class="text-sm font-semibold">{{ title }}</h2>
+  </div>
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="border-b border-border bg-muted/50">
+        <th class="h-9 px-4 text-left font-medium text-muted-foreground">{{ label }}</th>
+        <th class="h-9 px-4 text-right font-medium text-muted-foreground">Value</th>
+        <th class="h-9 px-4 text-right font-medium text-muted-foreground">Units</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr class="border-b border-border last:border-0 hover:bg-muted/50 transition-colors">
+        <td class="px-4 py-2 truncate">{{ row.key }}</td>
+        <td class="px-4 py-2 text-right tabular-nums">${{ row.value|floatformat:0|intcomma }}</td>
+        <td class="px-4 py-2 text-right tabular-nums text-muted-foreground">{{ row.quantity|intcomma }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="px-4 py-8 text-center text-muted-foreground">No data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

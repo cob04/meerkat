@@ -10,4 +10,5 @@ urlpatterns = [
     path("expiry/", views.expiry, name="expiry"),
     path("stock/", views.low_stock, name="low-stock"),
     path("recall/", views.recall_lookup, name="recall-lookup"),
+    path("insights/value/", views.inventory_value, name="inventory-value"),
 ]

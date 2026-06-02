@@ -209,6 +209,31 @@ class LowStockResult:
     engine_took_ms: int
 
 
+@dataclass
+class ValueQuery:
+    location: list[str] = field(default_factory=list)
+    category: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ValueBucket:
+    key: str
+    value: float
+    quantity: int
+    items: int
+
+
+@dataclass
+class ValueResult:
+    total_value: float
+    total_quantity: int
+    total_items: int
+    by_location: list[ValueBucket]
+    by_category: list[ValueBucket]
+    by_manufacturer: list[ValueBucket]
+    engine_took_ms: int
+
+
 RECALL_TOP_N = 100
 
 

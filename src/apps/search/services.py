@@ -13,12 +13,15 @@ from apps.search.contracts import (
     RecallImpact,
     RecallQuery,
     StockQuery,
+    ValueQuery,
+    ValueResult,
 )
 from apps.search.queries import availability as availability_query
 from apps.search.queries import expiry as expiry_query
 from apps.search.queries import recall as recall_query
 from apps.search.queries import search as search_query
 from apps.search.queries import stock as stock_query
+from apps.search.queries import value as value_query
 
 EARTH_RADIUS_KM = 6371.0088
 
@@ -49,6 +52,12 @@ def suggest(q: str, limit: int = 8) -> list[str]:
                 if len(suggestions) >= limit:
                     return suggestions
     return suggestions
+
+
+def inventory_value(query: ValueQuery) -> ValueResult:
+    body = value_query.build_body(query)
+    response = client.search(body)
+    return value_query.parse_response(response, query)
 
 
 def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:

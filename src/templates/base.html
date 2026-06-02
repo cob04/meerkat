@@ -138,6 +138,14 @@
           <span x-show="sidebarOpen" x-cloak>Recall Lookup</span>
         </a>
 
+        <div class="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle" x-show="sidebarOpen" x-cloak>Insights</div>
+        <div class="mx-auto my-2 h-px w-6 bg-border" x-show="!sidebarOpen" x-cloak></div>
+
+        <a href="{% url 'search:inventory-value' %}" title="Inventory Value" :class="{ 'justify-center': !sidebarOpen }" class="{{ base }} {% if current == 'inventory-value' %}{{ active }}{% else %}{{ idle }}{% endif %}">
+          <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18"/><path d="M7 16v-5M12 16V8M17 16v-3"/></svg>
+          <span x-show="sidebarOpen" x-cloak>Inventory Value</span>
+        </a>
+
         <div class="px-3 pt-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-subtle" x-show="sidebarOpen" x-cloak>Operations</div>
         <div class="mx-auto my-2 h-px w-6 bg-border" x-show="!sidebarOpen" x-cloak></div>
 

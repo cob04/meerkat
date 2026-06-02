@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Inventory Value - Meerkat{% endblock %}
+{% block page_title %}Inventory Value{% endblock %}
+
+{% block content %}
+{% if result %}
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Stock value</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-brand-soft text-brand">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">${{ result.total_value|floatformat:0|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">capital tied up in stock</div>
+  </div>
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Units on hand</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-brand-soft text-brand">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 7l9-4 9 4-9 4-9-4zM3 7v10l9 4 9-4V7"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ result.total_quantity|intcomma }}</div>
+    <div class="mt-1 text-xs text-subtle">across {{ result.total_items|intcomma }} stock line{{ result.total_items|pluralize }}</div>
+  </div>
+  <div class="rounded-xl border border-border bg-card p-5 shadow-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-medium text-muted-foreground">Engine</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-brand-soft text-brand">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18"/><rect x="6" y="10" width="3" height="8" rx="0.5"/><rect x="11" y="6" width="3" height="12" rx="0.5"/><rect x="16" y="13" width="3" height="5" rx="0.5"/></svg>
+      </span>
+    </div>
+    <div class="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{{ result.engine_took_ms }}ms</div>
+    <div class="mt-1 text-xs text-subtle">aggregated from the search index</div>
+  </div>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  {% include "search/_value_table.html" with title="By location" rows=result.by_location label="Location" %}
+  {% include "search/_value_table.html" with title="By category" rows=result.by_category label="Category" %}
+  {% include "search/_value_table.html" with title="By manufacturer" rows=result.by_manufacturer label="Manufacturer" %}
+</div>
+{% else %}
+<div class="rounded-lg border border-border bg-card px-5 py-10 text-center text-sm text-muted-foreground">
+  Inventory value is temporarily unavailable.
+</div>
+{% endif %}
+{% endblock %}
