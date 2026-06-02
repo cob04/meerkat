@@ -103,3 +103,45 @@ class TestInventoryValue:
         assert body["aggs"]["total_value"]["sum"]["field"] == "line_value"
         assert result.total_value == 999.0
         assert result.total_items == 3
+
+
+@pytest.mark.unit
+class TestTurnover:
+    def test_composes_movements_and_instock_for_dead_stock(self):
+        from apps.search.contracts import TurnoverQuery
+
+        movements_response = {
+            "took": 5,
+            "aggregations": {
+                "dispensed_units": {"q": {"value": 120.0}},
+                "received_units": {"q": {"value": 200.0}},
+                "throughput": {"by_week": {"buckets": []}},
+                "top_movers": {
+                    "products": {"buckets": [{"key": "Panadol", "units": {"value": 50.0}}]}
+                },
+                "dispensed_products": {"products": {"buckets": [{"key": "Panadol"}]}},
+            },
+        }
+        instock_response = {
+            "aggregations": {
+                "products": {
+                    "buckets": [
+                        {"key": "Lantus", "units": {"value": 40.0}, "value": {"value": 800.0}},
+                        {"key": "Panadol", "units": {"value": 100.0}, "value": {"value": 200.0}},
+                    ]
+                }
+            }
+        }
+
+        def fake_search(body, index=client.INVENTORY_INDEX):
+            return movements_response if index == client.MOVEMENTS_INDEX else instock_response
+
+        with patch("apps.search.services.client.search", side_effect=fake_search):
+            result = services.turnover(TurnoverQuery())
+
+        assert result.dispensed_units == 120
+        assert result.received_units == 200
+        assert result.top_movers[0].product == "Panadol"
+        # Panadol was dispensed -> excluded from dead stock; Lantus remains
+        assert [r.product for r in result.dead_stock] == ["Lantus"]
+        assert result.dead_stock_value == 800.0

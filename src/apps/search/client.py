@@ -8,6 +8,7 @@ class SearchUnavailable(Exception):
 
 
 INVENTORY_INDEX = f"{settings.OPENSEARCH_INDEX_PREFIX}_inventory_items"
+MOVEMENTS_INDEX = f"{settings.OPENSEARCH_INDEX_PREFIX}_stock_movements"
 
 CLIENT_TIMEOUT_SECONDS = 0.5
 
@@ -21,9 +22,9 @@ def get_client() -> OpenSearch:
     )
 
 
-def search(body: dict) -> dict:
+def search(body: dict, index: str = INVENTORY_INDEX) -> dict:
     client = get_client()
     try:
-        return client.search(index=INVENTORY_INDEX, body=body)
+        return client.search(index=index, body=body)
     except (ConnectionError, ConnectionTimeout, TransportError) as exc:
         raise SearchUnavailable(str(exc)) from exc

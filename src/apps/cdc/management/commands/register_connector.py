@@ -59,7 +59,8 @@ class Command(BaseCommand):
                     "public.catalog_inventoryitem,"
                     "public.catalog_product,"
                     "public.catalog_drug,"
-                    "public.catalog_location"
+                    "public.catalog_location,"
+                    "public.catalog_stockmovement"
                 ),
                 "plugin.name": "pgoutput",
                 "publication.autocreate.mode": "filtered",

@@ -5,6 +5,8 @@ import pytest
 from apps.cdc.opensearch_client import (
     INVENTORY_INDEX,
     INVENTORY_MAPPING,
+    MOVEMENTS_INDEX,
+    MOVEMENTS_MAPPING,
     create_index,
     delete_document,
     index_document,
@@ -19,7 +21,9 @@ class TestOpenSearchClient:
 
         create_index(client)
 
-        client.indices.create.assert_called_once_with(index=INVENTORY_INDEX, body=INVENTORY_MAPPING)
+        assert client.indices.create.call_count == 2
+        client.indices.create.assert_any_call(index=INVENTORY_INDEX, body=INVENTORY_MAPPING)
+        client.indices.create.assert_any_call(index=MOVEMENTS_INDEX, body=MOVEMENTS_MAPPING)
 
     def test_create_index_skips_when_exists(self):
         client = MagicMock()
@@ -35,8 +39,9 @@ class TestOpenSearchClient:
 
         create_index(client, recreate=True)
 
-        client.indices.delete.assert_called_once_with(index=INVENTORY_INDEX)
-        client.indices.create.assert_called_once()
+        assert client.indices.delete.call_count == 2
+        client.indices.delete.assert_any_call(index=INVENTORY_INDEX)
+        assert client.indices.create.call_count == 2
 
     def test_index_document(self):
         client = MagicMock()

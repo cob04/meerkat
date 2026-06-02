@@ -17,6 +17,8 @@ from apps.search.contracts import (
     RecallImpact,
     RecallQuery,
     StockQuery,
+    TurnoverQuery,
+    TurnoverResult,
     ValueAtRiskQuery,
     ValueAtRiskResult,
     ValueQuery,
@@ -29,6 +31,7 @@ from apps.search.queries import expiry as expiry_query
 from apps.search.queries import recall as recall_query
 from apps.search.queries import search as search_query
 from apps.search.queries import stock as stock_query
+from apps.search.queries import turnover as turnover_query
 from apps.search.queries import value as value_query
 from apps.search.queries import value_at_risk as value_at_risk_query
 
@@ -85,6 +88,24 @@ def catalog_composition(query: CompositionQuery) -> CompositionResult:
     body = composition_query.build_body(query)
     response = client.search(body)
     return composition_query.parse_response(response, query)
+
+
+def turnover(query: TurnoverQuery) -> TurnoverResult:
+    movements = turnover_query.parse_movements(
+        client.search(turnover_query.build_movements_body(query), index=client.MOVEMENTS_INDEX)
+    )
+    instock = client.search(turnover_query.build_instock_body())
+    rows, dead_value = turnover_query.dead_stock(instock, movements["dispensed_products"])
+    return TurnoverResult(
+        window_days=query.window_days,
+        dispensed_units=movements["dispensed_units"],
+        received_units=movements["received_units"],
+        dead_stock_value=dead_value,
+        throughput=movements["throughput"],
+        top_movers=movements["top_movers"],
+        dead_stock=rows,
+        engine_took_ms=movements["engine_took_ms"],
+    )
 
 
 def expiry_rollup(query: ExpiryQuery) -> ExpiryRollup:
